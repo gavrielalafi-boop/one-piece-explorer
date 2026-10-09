@@ -1,7 +1,7 @@
 [
-  { "id": 1, "name": "Monkey D. Luffy" },
-  { "id": 2, "name": "Roronoa Zoro" },
-  { "id": 3, "name": "Nami" },
-  { "id": 4, "name": "Usopp" },
-  { "id": 5, "name": "Sanji" }
+  { "id": 1, "name": "Monkey D. Luffy", "crew": { "name": "Straw Hat Pirates" }, "job": "Captain" },
+  { "id": 2, "name": "Roronoa Zoro", "crew": { "name": "Straw Hat Pirates" }, "job": "Swordsman" },
+  { "id": 3, "name": "Nami", "crew": { "name": "Straw Hat Pirates" }, "job": "Navigator" },
+  { "id": 4, "name": "Usopp", "crew": { "name": "Straw Hat Pirates" }, "job": "Sniper" },
+  { "id": 5, "name": "Sanji", "crew": { "name": "Straw Hat Pirates" }, "job": "Cook" }
 ]

@@ -14,3 +14,20 @@ body {
   margin: 0 auto;
   padding: 2rem 1rem;
 }
+.character-card {
+  padding: 0.5rem 0.75rem;
+  margin: 0.25rem 0;
+  border: 2px solid transparent;
+  cursor: pointer;
+  font: inherit;
+}
+
+.character-card.selected {
+  border-color: currentColor;
+  font-weight: bold;
+}
+
+.character-card:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}

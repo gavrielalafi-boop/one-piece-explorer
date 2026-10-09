@@ -1,10 +1,10 @@
 # Tasks — One Piece Explorer
 
-Task 1 is completed and verified by the user; tasks 2–8 remain planned. Setup is saved in e6b43bd. Work on one task at a time, review the diff, run relevant checks, document only actual checks, then stop and explain the change in three sentences. The user handles commits unless explicitly requested otherwise.
+Tasks 1–2 are completed and verified by the user; tasks 3–8 remain planned. Setup is saved in e6b43bd. Work on one task at a time, review the diff, run relevant checks, document only actual checks, then stop and explain the change in three sentences. The user handles commits unless explicitly requested otherwise.
 
 - [x] **1 · Local JSON list** — Render at least five sample characters from src/data/characters.sample.json through separate CharacterList and CharacterCard components, initially in JavaScript.
   **Done when:** all sample names appear, each item uses its unique ID as key and the browser Console has no app errors.
-- [ ] **2 · Selection and details** — Keep selection state in App; pass data and callbacks through props.
+- [x] **2 · Selection and details** — Keep selection state in App; pass data and callbacks through props.
   **Done when:** before selection an instruction appears; clicking a sample character displays its facts and highlights its card; missing facts show an unknown label.
 - [ ] **3 · Explicit TypeScript conversion** — Add minimal tooling, convert existing React files to TSX and introduce basic character and props types without changing behavior.
   **Done when:** a no-emit type-check script, lint and build pass; the JSON list and selection still work and automatic prompt logging remains intact.
