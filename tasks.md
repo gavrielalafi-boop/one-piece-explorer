@@ -1,8 +1,8 @@
 # Tasks — One Piece Explorer
 
-Planning only; no development task is completed. Setup is saved in e6b43bd. Work on one task at a time, review the diff, run relevant checks, document only actual checks, then stop and explain the change in three sentences. The user handles commits unless explicitly requested otherwise.
+Task 1 is completed and verified by the user; tasks 2–8 remain planned. Setup is saved in e6b43bd. Work on one task at a time, review the diff, run relevant checks, document only actual checks, then stop and explain the change in three sentences. The user handles commits unless explicitly requested otherwise.
 
-- [ ] **1 · Local JSON list** — Render at least five sample characters from src/data/characters.sample.json through separate CharacterList and CharacterCard components, initially in JavaScript.
+- [x] **1 · Local JSON list** — Render at least five sample characters from src/data/characters.sample.json through separate CharacterList and CharacterCard components, initially in JavaScript.
   **Done when:** all sample names appear, each item uses its unique ID as key and the browser Console has no app errors.
 - [ ] **2 · Selection and details** — Keep selection state in App; pass data and callbacks through props.
   **Done when:** before selection an instruction appears; clicking a sample character displays its facts and highlights its card; missing facts show an unknown label.
