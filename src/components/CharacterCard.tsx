@@ -1,4 +1,12 @@
-export default function CharacterCard({ character, isSelected, onSelect }) {
+import type { Character } from '../types'
+
+type CharacterCardProps = {
+  character: Character
+  isSelected: boolean
+  onSelect: (id: number) => void
+}
+
+export default function CharacterCard({ character, isSelected, onSelect }: CharacterCardProps) {
   return (
     <li>
       <button
@@ -12,3 +20,4 @@ export default function CharacterCard({ character, isSelected, onSelect }) {
     </li>
   )
 }
+

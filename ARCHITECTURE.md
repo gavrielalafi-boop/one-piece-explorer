@@ -17,7 +17,7 @@ Planning only. Tasks 1–2 use JavaScript; task 3 explicitly converts existing f
 | src/components/CharacterCard.tsx | Name, selection, active indication and separate favorite toggle. |
 | src/components/CharacterDetails.tsx | Facts, missing-value labels and instruction before selection. |
 | src/components/StatusMessage.tsx | Loading, error/retry, no-results and unknown-route/ID feedback. |
-| src/App.test.tsx | Focused Vitest selection/navigation and API error/retry tests with mocked network. |
+| src/tests/App.test.tsx | Focused Vitest selection/navigation and API error/retry tests with mocked network. |
 | package.json and configuration files | Future minimal TypeScript, Router and Vitest setup; preserve existing scripts and add checks. |
 | README.md | Separate run/check instructions and API source sections; end with five Hebrew sentences explaining App selection state and data flow through props to CharacterDetails in task 8. |
 | AGENTS.md, PROMPTS.md | Working rules and prompt history; preserve hook and logging script. |
@@ -54,4 +54,5 @@ Store only character IDs under localStorage key one-piece-explorer:favorites. Va
 
 ## Verification
 
-Use existing lint and build throughout development; add a no-emit type check in task 3 and Vitest script in task 8. Mock network in focused behavior tests. Verify API/CORS, refresh/Back, persistence and desktop/mobile layout in a real browser. Record only actual checks and mark tasks complete only after their Done when conditions pass.
+Use existing lint and build throughout development; add a no-emit type check in task 3 and Vitest script in task 8. Create all automated tests together in task 8 under src/tests/; until then use type checking, lint, build and task-specific manual checks. Mock network in focused behavior tests. Verify API/CORS, refresh/Back, persistence and desktop/mobile layout in a real browser. Record only actual checks and mark tasks complete only after their Done when conditions pass.
+

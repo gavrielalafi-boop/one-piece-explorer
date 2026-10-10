@@ -1,8 +1,14 @@
-const displayValue = (value) => (
+import type { Character } from '../types'
+
+type CharacterDetailsProps = {
+  character: Character | undefined
+}
+
+const displayValue = (value: string | number | null | undefined) => (
   value === null || value === undefined || String(value).trim() === '' ? 'לא ידוע' : value
 )
 
-export default function CharacterDetails({ character }) {
+export default function CharacterDetails({ character }: CharacterDetailsProps) {
   if (!character) {
     return <p>בחרו דמות כדי לראות את פרטיה.</p>
   }
@@ -23,3 +29,4 @@ export default function CharacterDetails({ character }) {
     </section>
   )
 }
+

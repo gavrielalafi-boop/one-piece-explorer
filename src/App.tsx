@@ -1,8 +1,10 @@
-import CharacterList from './components/CharacterList.jsx'
+import { useState } from 'react'
+import CharacterDetails from './components/CharacterDetails'
+import CharacterList from './components/CharacterList'
 import characters from './data/characters.sample.json'
 
 export default function App() {
-  const [selectedCharacterId, setSelectedCharacterId] = useState(null)
+  const [selectedCharacterId, setSelectedCharacterId] = useState<number | null>(null)
   const selectedCharacter = characters.find((character) => character.id === selectedCharacterId)
 
   return (
@@ -18,5 +20,4 @@ export default function App() {
     </main>
   )
 }
-import { useState } from 'react'
-import CharacterDetails from './components/CharacterDetails.jsx'
+
