@@ -39,7 +39,7 @@ BrowserRouter (from task 6)
     CharacterDetails
 ```
 
-Both home and character routes compose the same list/details layout. CSS places details beside the list on desktop and below it on mobile.
+From task 6, / shows SearchBar and CharacterList; /characters/:id shows only CharacterDetails and a return-to-list button, with details near the top rather than below a long list. App stays mounted across both routes and owns searchQuery, data and selection. The side-by-side layout from task 5 is superseded by separate route views.
 
 ## State and props
 
@@ -70,3 +70,11 @@ During task 4 run typecheck/lint/build and verify in Chrome from the actual Vite
 
 
 
+
+## Task 6 route-view refinement
+
+Add only react-router-dom as a runtime dependency, with its built-in TypeScript support. main.tsx wraps App in BrowserRouter. App uses useLocation/useNavigate and matchPath to match /characters/:id, keeping App outside route-dependent remounts. CharacterList and CharacterCard retain onSelect props; selection updates App state and navigates once only when the target path differs. The pathname synchronization effect validates a positive safe integer ID and updates selectedCharacterId only when different; it never navigates. There is no state-to-navigation effect. Home sets selection to null without resetting searchQuery. A home button navigates explicitly to / rather than blindly going back, so direct-entry users always reach the list. Search survives route changes, but full reload starts a fresh search; no storage is added.
+
+For valid direct IDs, show loading or fetch error/retry first, then resolve membership in the loaded collection. Non-numeric, zero, negative or unsafe IDs show invalid-ID feedback; valid IDs outside the collection show an accurate outside-collection message, not a claim that the character does not exist. Unknown paths show a separate route-not-found message. Each feedback view offers return to list. No new request is triggered solely by navigation. On pathname change, move the viewport to the top and focus the route heading so details are immediately visible, including keyboard navigation. No extra data API or per-character request is introduced.
+
+Implementation files: main.tsx, App.tsx, index.css for route-specific presentation if needed, package.json/package-lock.json and matching planning documents; existing CharacterDetails/Card/List/SearchBar props stay intact unless minimal accessibility changes require them. Run typecheck, lint and build. Manually verify filtered list → character → return with search preserved; top-of-view details on narrow screens; direct entry and refresh (for example /characters/40); Back/Forward; home clearing selection; invalid IDs, unloaded IDs and unknown paths; loading/error/retry on direct entry; keyboard focus and no horizontal overflow. Deployment needs SPA fallback, while Vite direct-link behavior must be tested locally. No favorites or automated tests until their planned tasks.

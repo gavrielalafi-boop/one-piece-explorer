@@ -9,7 +9,7 @@ export default function CharacterDetails({ character }: CharacterDetailsProps) {
   const description = cleanCharacterDescription(character.description)
   return (
     <section aria-labelledby="character-details-heading" dir="rtl">
-      <h2 id="character-details-heading" lang="en" dir="ltr">{character.name}</h2>
+      <h2 id="character-details-heading" tabIndex={-1} lang="en" dir="ltr">{character.name}</h2>
       <CharacterImage key={character.imageUrl} imageUrl={character.imageUrl} name={character.name} />
       {description
         ? <div lang="en" dir="ltr">{description.split(/\n\s*\n/).map((paragraph, index) => (
@@ -19,3 +19,4 @@ export default function CharacterDetails({ character }: CharacterDetailsProps) {
     </section>
   )
 }
+

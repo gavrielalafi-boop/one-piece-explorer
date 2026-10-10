@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { matchPath, useLocation, useNavigate } from 'react-router-dom'
 import CharacterDetails from './components/CharacterDetails'
 import CharacterList from './components/CharacterList'
 import SearchBar from './components/SearchBar'
@@ -58,9 +59,16 @@ function readCharacters(payload: unknown): { characters: Character[]; hasNextPag
 }
 
 export default function App() {
+  const { pathname } = useLocation()
+  const navigate = useNavigate()
+  const routeHeading = useRef<HTMLHeadingElement>(null)
+  const isHome = pathname === '/'
+  const characterRoute = matchPath('/characters/:id', pathname)
+  const rawId = characterRoute?.params.id
+  const routeId = rawId && /^[1-9]\d*$/.test(rawId) && Number.isSafeInteger(Number(rawId)) ? Number(rawId) : null
   const [characters, setCharacters] = useState<Character[]>([])
   const [searchQuery, setSearchQuery] = useState('')
-  const [selectedCharacterId, setSelectedCharacterId] = useState<number | null>(null)
+  const [selectedCharacterId, setSelectedCharacterId] = useState<number | null>(routeId)
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading')
   const [errorMessage, setErrorMessage] = useState('')
   const [hasNextPage, setHasNextPage] = useState(false)
@@ -68,6 +76,13 @@ export default function App() {
   const selectedCharacter = characters.find((character) => character.id === selectedCharacterId)
   const normalizedQuery = searchQuery.trim().toLowerCase()
   const visibleCharacters = characters.filter((character) => character.name.toLowerCase().includes(normalizedQuery))
+
+  useEffect(() => {
+    // Read the route into state only; this effect never navigates.
+    // Browser history is external state; keep the course-required App state in sync.
+    // eslint-disable-next-line react/set-state-in-effect
+    setSelectedCharacterId((previous) => previous === routeId ? previous : routeId)
+  }, [routeId])
 
   useEffect(() => {
     const controller = new AbortController()
@@ -101,35 +116,59 @@ export default function App() {
     return () => { active = false; controller.abort() }
   }, [attempt])
 
+  useEffect(() => {
+    const heading = document.getElementById('character-details-heading') ?? routeHeading.current
+    heading?.focus({ preventScroll: true })
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
+  }, [pathname, status, selectedCharacterId])
+
+  function selectCharacter(id: number) {
+    setSelectedCharacterId(id)
+    const targetPath = `/characters/${id}`
+    if (pathname !== targetPath) navigate(targetPath)
+  }
+
+  function returnToList() {
+    setSelectedCharacterId(null)
+    if (!isHome) navigate('/')
+  }
+
+  const routeError = !isHome && !characterRoute ? 'הכתובת אינה מוכרת.'
+    : characterRoute && routeId === null ? 'מזהה הדמות אינו תקין.' : null
+
   return (
     <main className="app">
       <h1>One Piece Explorer</h1>
-      <h2>דמויות</h2>
-      {status === 'loading' && <p role="status">טוען דמויות מ־AniList...</p>}
-      {status === 'error' && <div role="alert">
-        <p>{errorMessage}</p>
-        <button type="button" onClick={() => { setStatus('loading'); setErrorMessage(''); setAttempt((value) => value + 1) }}>ניסיון נוסף</button>
-      </div>}
-      {status === 'success' && <>
-        <p>זהו אוסף מוגבל של עד 25 דמויות מהאנימה המקורית; נטענו {characters.length} דמויות.</p>
-        <p>התקצירים והתיאורים עשויים להכיל ספוילרים.</p>
-        {hasNextPage && <p>קיימות דמויות נוספות ב־AniList שאינן מוצגות באוסף הזה.</p>}
-        {characters.length === 0 ? <p>לא התקבלו דמויות באוסף הזה.</p> : <>
-          <SearchBar value={searchQuery} onSearchChange={setSearchQuery} />
-          <p role="status">נמצאו {visibleCharacters.length} התאמות מתוך {characters.length} דמויות שנטענו.</p>
-          <div className="character-layout">
+      <h2 ref={routeHeading} tabIndex={-1}>{isHome ? 'דמויות' : 'פרטי דמות'}</h2>
+      {!isHome && <button type="button" className="return-button" onClick={returnToList}>חזרה לרשימה</button>}
+      {routeError ? <p role="alert">{routeError}</p> : <>
+        {status === 'loading' && <p role="status">טוען דמויות מ־AniList...</p>}
+        {status === 'error' && <div role="alert">
+          <p>{errorMessage}</p>
+          <button type="button" onClick={() => { setStatus('loading'); setErrorMessage(''); setAttempt((value) => value + 1) }}>ניסיון נוסף</button>
+        </div>}
+        {status === 'success' && <>
+          {isHome ? <>
+            <p>זהו אוסף מוגבל של עד 25 דמויות מהאנימה המקורית; נטענו {characters.length} דמויות.</p>
+            <p>התקצירים והתיאורים עשויים להכיל ספוילרים.</p>
+            {hasNextPage && <p>קיימות דמויות נוספות ב־AniList שאינן מוצגות באוסף הזה.</p>}
+            <SearchBar value={searchQuery} onSearchChange={setSearchQuery} />
+            <p role="status">נמצאו {visibleCharacters.length} התאמות מתוך {characters.length} דמויות שנטענו.</p>
             <section className="character-list-panel" aria-label="רשימת דמויות">
               {visibleCharacters.length > 0
-                ? <CharacterList characters={visibleCharacters} selectedCharacterId={selectedCharacterId} onSelect={setSelectedCharacterId} />
+                ? <CharacterList characters={visibleCharacters} selectedCharacterId={selectedCharacterId} onSelect={selectCharacter} />
                 : <p>לא נמצאו דמויות באוסף שנטען. נסו שם אחר או נקו את החיפוש.</p>}
             </section>
-            <div className="character-details-panel">
+          </> : selectedCharacterId !== routeId
+            ? <p role="status">טוען את הבחירה...</p>
+            : selectedCharacter
+            ? <div className="character-details-panel">
+              <p>התיאור עשוי להכיל ספוילרים.</p>
               <CharacterDetails key={selectedCharacterId} character={selectedCharacter} />
             </div>
-          </div>
+            : <p role="alert">הדמות אינה באוסף של עד 25 הדמויות שנטענו.</p>}
         </>}
       </>}
     </main>
   )
 }
-

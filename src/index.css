@@ -206,3 +206,12 @@ button:focus-visible, input:focus-visible {
   .search-controls input { flex-basis: 100%; }
   .character-card { gap: 0.5rem; padding: 0.5rem; }
 }
+
+.return-button {
+  padding: 0.65rem 1rem;
+  margin-bottom: 1rem;
+  background: #e2edf7;
+  color: #172b40;
+  border: 1px solid #637a90;
+  border-radius: 4px;
+}
