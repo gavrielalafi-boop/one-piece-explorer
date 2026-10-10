@@ -91,3 +91,118 @@ body {
 .character-card-fact {
   display: block;
 }
+
+:root {
+  color-scheme: light;
+  color: #172b40;
+  background: #eef3f8;
+}
+
+* { box-sizing: border-box; }
+
+.app {
+  max-width: 1200px;
+  overflow-wrap: anywhere;
+}
+
+button, input { font: inherit; }
+
+button { cursor: pointer; }
+
+button:disabled { cursor: default; opacity: 0.6; }
+
+button:focus-visible, input:focus-visible {
+  outline: 3px solid #0b65b9;
+  outline-offset: 3px;
+}
+
+.search-bar {
+  padding: 1rem;
+  background: #fff;
+  border: 1px solid #bbcbd9;
+  border-radius: 8px;
+}
+
+.search-bar label { font-weight: bold; }
+
+.search-bar p { margin: 0.5rem 0; }
+
+.search-controls { display: flex; gap: 0.75rem; }
+
+.search-controls input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.65rem;
+  border: 1px solid #637a90;
+  border-radius: 4px;
+  text-align: left;
+}
+
+.search-controls button {
+  padding: 0.65rem;
+  background: #e2edf7;
+  color: #172b40;
+  border: 1px solid #637a90;
+  border-radius: 4px;
+}
+
+.character-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.character-list-panel, .character-details-panel { min-width: 0; }
+
+.character-list { list-style: none; padding: 0; margin: 0; }
+
+.character-list li { margin-bottom: 0.75rem; }
+
+.character-card {
+  margin: 0;
+  background: #fff;
+  color: #172b40;
+  border-color: #bbcbd9;
+  border-radius: 8px;
+  padding: 0.75rem;
+}
+
+.character-card:hover { border-color: #0b65b9; }
+
+.character-card.selected {
+  background: #e3effc;
+  border-color: #07579c;
+  box-shadow: inset 0 0 0 1px #07579c;
+  font-weight: normal;
+}
+
+.character-card-title { margin-bottom: 0.5rem; }
+
+.character-card-image {
+  background: #e2e8ef;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.character-details-panel {
+  background: #fff;
+  border: 1px solid #bbcbd9;
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.character-details-panel [dir="ltr"] { text-align: left; }
+
+.character-description { line-height: 1.7; }
+
+@media (max-width: 760px) {
+  .character-layout { grid-template-columns: minmax(0, 1fr); }
+  .app { padding: 1rem 0.75rem; }
+}
+
+@media (max-width: 400px) {
+  .search-controls { flex-wrap: wrap; }
+  .search-controls input { flex-basis: 100%; }
+  .character-card { gap: 0.5rem; padding: 0.5rem; }
+}

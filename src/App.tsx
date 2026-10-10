@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import CharacterDetails from './components/CharacterDetails'
 import CharacterList from './components/CharacterList'
+import SearchBar from './components/SearchBar'
 import type { Character } from './types'
 
 const query = `query {
@@ -58,12 +59,15 @@ function readCharacters(payload: unknown): { characters: Character[]; hasNextPag
 
 export default function App() {
   const [characters, setCharacters] = useState<Character[]>([])
+  const [searchQuery, setSearchQuery] = useState('')
   const [selectedCharacterId, setSelectedCharacterId] = useState<number | null>(null)
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading')
   const [errorMessage, setErrorMessage] = useState('')
   const [hasNextPage, setHasNextPage] = useState(false)
   const [attempt, setAttempt] = useState(0)
   const selectedCharacter = characters.find((character) => character.id === selectedCharacterId)
+  const normalizedQuery = searchQuery.trim().toLowerCase()
+  const visibleCharacters = characters.filter((character) => character.name.toLowerCase().includes(normalizedQuery))
 
   useEffect(() => {
     const controller = new AbortController()
@@ -111,8 +115,18 @@ export default function App() {
         <p>התקצירים והתיאורים עשויים להכיל ספוילרים.</p>
         {hasNextPage && <p>קיימות דמויות נוספות ב־AniList שאינן מוצגות באוסף הזה.</p>}
         {characters.length === 0 ? <p>לא התקבלו דמויות באוסף הזה.</p> : <>
-          <CharacterList characters={characters} selectedCharacterId={selectedCharacterId} onSelect={setSelectedCharacterId} />
-          <CharacterDetails key={selectedCharacterId} character={selectedCharacter} />
+          <SearchBar value={searchQuery} onSearchChange={setSearchQuery} />
+          <p role="status">נמצאו {visibleCharacters.length} התאמות מתוך {characters.length} דמויות שנטענו.</p>
+          <div className="character-layout">
+            <section className="character-list-panel" aria-label="רשימת דמויות">
+              {visibleCharacters.length > 0
+                ? <CharacterList characters={visibleCharacters} selectedCharacterId={selectedCharacterId} onSelect={setSelectedCharacterId} />
+                : <p>לא נמצאו דמויות באוסף שנטען. נסו שם אחר או נקו את החיפוש.</p>}
+            </section>
+            <div className="character-details-panel">
+              <CharacterDetails key={selectedCharacterId} character={selectedCharacter} />
+            </div>
+          </div>
         </>}
       </>}
     </main>

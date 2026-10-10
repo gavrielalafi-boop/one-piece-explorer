@@ -10,7 +10,7 @@ import CharacterCard from './CharacterCard'
 
 export default function CharacterList({ characters, selectedCharacterId, onSelect }: CharacterListProps) {
   return (
-    <ul>
+    <ul className="character-list">
       {characters.map((character) => (
         <CharacterCard
           key={character.id}
