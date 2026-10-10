@@ -9,13 +9,14 @@ Planning only. Tasks 1–2 use JavaScript; task 3 explicitly converts existing f
 | src/main.tsx | Mount React; provide BrowserRouter from task 6. |
 | src/App.tsx | Own data, selectedCharacterId state, request state, search and favorites; synchronize selection with routes, compose list/details and fetch in useEffect. |
 | src/App.css, src/index.css | Adapt existing styles for Hebrew RTL, visible focus and responsive layout. |
-| src/types.ts | Basic Character and optional nested crew/fruit types; props types stay in component files. |
+| src/types.ts | Task 4 Character: numeric id, English name, nullable imageUrl and description; normalize AniList name.full and image.large. Remove separate crew/fruit/job fields from the live model; props types stay in component files. |
 | src/data/characters.sample.json | At least five samples for tasks 1–2; retain after API integration. |
 | src/components/Header.tsx | Heading and home link. |
 | src/components/SearchBar.tsx | Controlled search and favorites-only control. |
 | src/components/CharacterList.tsx | Map cards with unique character ID keys. |
-| src/components/CharacterCard.tsx | Name, selection, active indication and separate favorite toggle. |
-| src/components/CharacterDetails.tsx | Facts, missing-value labels and instruction before selection. |
+| src/components/CharacterCard.tsx | English name, available AniList image with missing/broken-image feedback, selection, active indication and later separate favorite toggle. |
+| src/components/CharacterImage.tsx | Shared image and unavailable-image feedback; remount by URL to reset failed-image state. |
+| src/components/CharacterDetails.tsx | English name/image/description, Hebrew missing-content feedback and instruction before selection; render source text safely as described below. |
 | src/components/StatusMessage.tsx | Loading, error/retry, no-results and unknown-route/ID feedback. |
 | src/tests/App.test.tsx | Focused Vitest selection/navigation and API error/retry tests with mocked network. |
 | package.json and configuration files | Future minimal TypeScript, Router and Vitest setup; preserve existing scripts and add checks. |
@@ -44,7 +45,7 @@ Both home and character routes compose the same list/details layout. CSS places 
 
 App owns characters, searchQuery, requestStatus (idle/loading/success/error), errorMessage, favoriteIds and favoritesOnly as features are introduced. Task 2 adds nullable selectedCharacterId state in App; task 6 retains it and synchronizes it with the /characters/:id route. selectedCharacter and visibleCharacters are derived values. App finds selectedCharacter by its state ID and passes that character through props to CharacterDetails.
 
-Data flows down through props; callbacks such as onSelect, onSearchChange, onToggleFavorite and onRetry flow up. Children do not mutate props. Fetch in useEffect checks HTTP status and basic response shape, cancels obsolete requests with AbortController and starts a fresh request on retry. Missing optional fields show an unknown label.
+Data flows down through props; callbacks such as onSelect, onSearchChange, onToggleFavorite and onRetry flow up. Children do not mutate props. Fetch in useEffect POSTs a GraphQL query and variables directly to https://graphql.anilist.co without a key or extra library. Check HTTP status, JSON, GraphQL errors (including HTTP 200 with errors) and runtime data shape using unknown, not any; reject partial data accompanied by errors. Abort obsolete requests with AbortController and prevent stale state updates; cancellation is not a displayed error. Retry starts a new request. Keep selectedCharacterId in App; derive details from loaded records, without fallback to sample data.
 
 ## Routes and persistence
 
@@ -55,4 +56,17 @@ Store only character IDs under localStorage key one-piece-explorer:favorites. Va
 ## Verification
 
 Use existing lint and build throughout development; add a no-emit type check in task 3 and Vitest script in task 8. Create all automated tests together in task 8 under src/tests/; until then use type checking, lint, build and task-specific manual checks. Mock network in focused behavior tests. Verify API/CORS, refresh/Back, persistence and desktop/mobile layout in a real browser. Record only actual checks and mark tasks complete only after their Done when conditions pass.
+
+
+## AniList scope and presentation (task 4)
+
+AniList is the only data API. Verified media ID 21 identifies ONE PIECE (TV, 1999); role/relevance/ID ordering returned the five requested central characters in the first 25 records. Request Media.characters(page: 1, perPage: 25, sort: [ROLE, RELEVANCE, ID]), nodes with id/name.full/image.large/description(asHtml: false), and pageInfo.hasNextPage. Validate unique IDs and normalize names/images/descriptions into the simple Character model. Load at most 25 records for this single media entry; no load-more feature. Show the actual loaded count and a Hebrew notice that this is a limited collection, with additional-source-record feedback from hasNextPage; do not use total/lastPage as authoritative completeness signals. Search and favorites filtering operate only on the loaded collection. Unloaded route IDs receive an outside-collection message, not a claim that the character does not exist in One Piece. Favorites store AniList character IDs; sample IDs are not assumed to identify the same characters.
+
+Keep controls and system messages in Hebrew RTL and source names/descriptions in English LTR. Render description(asHtml: false) as a React text node with preserved line breaks and wrapping, not injected HTML or dangerouslySetInnerHTML. In task 4, use one simple shared text-cleaning helper (planned src/utils/characterDescription.ts) for cards and details: remove formatting delimiters such as __ and ~!/!~, retain spoiler content, replace Markdown links with their visible labels only (no URL or clickable link) and remove standalone URLs, and preserve paragraph breaks. Render the result as React text, never HTML. This is targeted source-format cleanup, not a full Markdown parser. Cards show a heading and text left of a fixed 100×140 image on the right; placeholders retain those dimensions. Extract up to four explicitly labeled short facts (Height, Bounty, Devil Fruit, Devil Fruit Type) from cleaned description lines without inventing values; when none exist, derive card excerpts from the cleaned text, collapse whitespace only for excerpts and truncate to at most 180 characters at a word boundary with an ellipsis when needed; invent no facts. Details show the full cleaned text with paragraphs and LTR direction. Treat empty-after-cleaning text as missing. Task 5 handles card grid, spacing, typography, image sizing and responsive list/details layout; task 4 supplies basic readable text, excerpts and selection behavior. Show a spoiler notice and Hebrew feedback for null/blank descriptions. No separate job, ability or Devil Fruit fields are promised; only source descriptions may mention them. For null/blank image URLs or img onError, replace the image with Hebrew unavailable-image feedback; reset the failed-image state when the URL changes. Accept only HTTPS image URLs; load AniList-supplied CDN URLs directly, with useful alt text and no second image API.
+
+During task 4 run typecheck/lint/build and verify in Chrome from the actual Vite origin: direct POST to AniList, successful response and CORS/preflight, real image requests and display, selection/details and missing/broken-image feedback. Use Network Offline or block only the AniList endpoint, reload to observe error, then restore access and retry to confirm live recovery. Throttle the network to observe loading. GraphQL errors and malformed data get focused automated coverage in task 8; do not claim they were manually observed unless actually exercised. No proxy, translation service, backend or local-data fallback. Image failure affects its placeholder, not the successful character-list request.
+
+
+
+
 
