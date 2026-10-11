@@ -1,6 +1,6 @@
 # Tasks — One Piece Explorer
 
-Tasks 1–6 are completed and verified by the user; tasks 7–8 remain planned. Setup is saved in e6b43bd. Work on one task at a time, review the diff, run relevant checks, document only actual checks, then stop and explain the change in three sentences. The user handles commits unless explicitly requested otherwise.
+Tasks 1–7 are completed; task 8 remains planned. Task 7 manual verification is recorded separately for the user and agent in PROMPTS.md. Setup is saved in e6b43bd. Work on one task at a time, review the diff, run relevant checks, document only actual checks, then stop and explain the change in three sentences. The user handles commits unless explicitly requested otherwise.
 
 - [x] **1 · Local JSON list** — Render at least five sample characters from src/data/characters.sample.json through separate CharacterList and CharacterCard components, initially in JavaScript.
   **Done when:** all sample names appear, each item uses its unique ID as key and the browser Console has no app errors.
@@ -14,7 +14,7 @@ Tasks 1–6 are completed and verified by the user; tasks 7–8 remain planned. 
   **Done when:** “Luffy” returns matching names, unmatched text shows feedback, keyboard selection works and a narrow viewport has no horizontal scrolling.
 - [x] **6 · React Router** — Add / for list/search and a separate /characters/:id details screen near the top with a return-to-list button. Keep App mounted, preserve searchQuery on route changes and keep selectedCharacterId as state in App. Selection updates state and navigates only when the target path differs; a route-change effect updates state only when the parsed ID differs, without navigating.
   **Done when:** selection updates the URL, direct links and refresh populate App selection state, Back/Forward restore selection, home clears selection while preserving search, unknown routes and IDs outside the loaded collection show accurate messages after loading and synchronization creates no update loop or duplicate history entries.
-- [ ] **7 · localStorage favorites** — Store IDs, add separate toggle buttons and a favorites filter; handle malformed or unavailable storage.
+- [x] **7 · localStorage favorites** — Store IDs, add separate toggle buttons and a favorites filter; handle malformed or unavailable storage.
   **Done when:** favorites survive reload, removal/filtering work, toggles do not accidentally navigate and storage failures do not crash the app.
 - [ ] **8 · Vitest and submission documentation** — Set up Vitest and create automated tests together under src/tests/, covering selection/navigation and AniList HTTP/GraphQL/data error/retry; update README and run final checks.
   **Done when:** Vitest, type checking, lint and build pass; actual desktop/mobile browser checks are recorded; the final five Hebrew sentences in README explain where selectedCharacterId is stored in App, how selection updates it, how the selected character is derived and how props carry its data to CharacterDetails; run instructions and the API source are documented in separate sections; student code review, video and repository/video submission links are checked separately before submission, without inventing completed checks.

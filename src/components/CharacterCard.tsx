@@ -6,9 +6,11 @@ type CharacterCardProps = {
   character: Character
   isSelected: boolean
   onSelect: (id: number) => void
+  isFavorite: boolean
+  onToggleFavorite: (id: number) => void
 }
 
-export default function CharacterCard({ character, isSelected, onSelect }: CharacterCardProps) {
+export default function CharacterCard({ character, isSelected, onSelect, isFavorite, onToggleFavorite }: CharacterCardProps) {
   const description = cleanCharacterDescription(character.description)
   const excerpt = createCharacterExcerpt(description)
   const facts = extractCharacterFacts(description)
@@ -29,6 +31,15 @@ export default function CharacterCard({ character, isSelected, onSelect }: Chara
             <span className="character-card-fact" key={label}>{label}: {value}</span>
           )) : excerpt ? <span>{excerpt}</span> : <span lang="he" dir="rtl">תיאור לא זמין</span>}
         </span>
+      </button>
+      <button
+        type="button"
+        className="favorite-button"
+        aria-pressed={isFavorite}
+        aria-label={`${isFavorite ? 'הסרה ממועדפים' : 'הוספה למועדפים'}: ${character.name}`}
+        onClick={() => onToggleFavorite(character.id)}
+      >
+        {isFavorite ? 'הסרה ממועדפים' : 'הוספה למועדפים'}
       </button>
     </li>
   )

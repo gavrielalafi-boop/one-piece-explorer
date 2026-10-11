@@ -215,3 +215,25 @@ button:focus-visible, input:focus-visible {
   border: 1px solid #637a90;
   border-radius: 4px;
 }
+
+.favorite-button {
+  margin-top: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  max-width: 100%;
+  background: #e2edf7;
+  color: #172b40;
+  border: 1px solid #637a90;
+  border-radius: 4px;
+}
+
+.favorite-button[aria-pressed="true"] {
+  background: #e3effc;
+  border-color: #07579c;
+}
+
+.favorites-filter {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}

@@ -5,6 +5,24 @@ import CharacterList from './components/CharacterList'
 import SearchBar from './components/SearchBar'
 import type { Character } from './types'
 
+const favoritesStorageKey = 'one-piece-explorer:favorites'
+
+function readFavoriteStorage(): { ids: number[]; message: string } {
+  try {
+    const stored = localStorage.getItem(favoritesStorageKey)
+    if (stored === null) return { ids: [], message: '' }
+    let value: unknown
+    try { value = JSON.parse(stored) }
+    catch { return { ids: [], message: 'נתוני המועדפים השמורים פגומים. מתחילים עם רשימה ריקה; שינוי מועדפים ישמור רשימה חדשה.' } }
+    if (!Array.isArray(value) || !value.every((id: unknown) => typeof id === 'number' && Number.isSafeInteger(id) && id > 0)) {
+      return { ids: [], message: 'נתוני המועדפים השמורים אינם תקינים. מתחילים עם רשימה ריקה; שינוי מועדפים ישמור רשימה חדשה.' }
+    }
+    return { ids: [...new Set<number>(value)], message: '' }
+  } catch {
+    return { ids: [], message: 'אחסון המועדפים אינו זמין. אפשר להשתמש במועדפים כעת, אך שמירה לאחר רענון אינה מובטחת.' }
+  }
+}
+
 const query = `query {
   Media(id: 21, type: ANIME) {
     characters(page: 1, perPage: 25, sort: [ROLE, RELEVANCE, ID]) {
@@ -68,6 +86,11 @@ export default function App() {
   const routeId = rawId && /^[1-9]\d*$/.test(rawId) && Number.isSafeInteger(Number(rawId)) ? Number(rawId) : null
   const [characters, setCharacters] = useState<Character[]>([])
   const [searchQuery, setSearchQuery] = useState('')
+  // Read synchronously before initializing favorites; never write during mounting.
+  const [initialFavorites] = useState(readFavoriteStorage)
+  const [favoriteIds, setFavoriteIds] = useState<number[]>(initialFavorites.ids)
+  const [favoritesOnly, setFavoritesOnly] = useState(false)
+  const [storageMessage, setStorageMessage] = useState(initialFavorites.message)
   const [selectedCharacterId, setSelectedCharacterId] = useState<number | null>(routeId)
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading')
   const [errorMessage, setErrorMessage] = useState('')
@@ -75,7 +98,8 @@ export default function App() {
   const [attempt, setAttempt] = useState(0)
   const selectedCharacter = characters.find((character) => character.id === selectedCharacterId)
   const normalizedQuery = searchQuery.trim().toLowerCase()
-  const visibleCharacters = characters.filter((character) => character.name.toLowerCase().includes(normalizedQuery))
+  const visibleCharacters = characters.filter((character) =>
+    character.name.toLowerCase().includes(normalizedQuery) && (!favoritesOnly || favoriteIds.includes(character.id)))
 
   useEffect(() => {
     // Read the route into state only; this effect never navigates.
@@ -128,6 +152,18 @@ export default function App() {
     if (pathname !== targetPath) navigate(targetPath)
   }
 
+  function toggleFavorite(id: number) {
+    const nextIds = favoriteIds.includes(id) ? favoriteIds.filter((favoriteId) => favoriteId !== id) : [...favoriteIds, id]
+    setFavoriteIds(nextIds)
+    // Persist only an explicit user change, after the initial read has finished.
+    try {
+      localStorage.setItem(favoritesStorageKey, JSON.stringify(nextIds))
+      setStorageMessage('')
+    } catch {
+      setStorageMessage('לא ניתן לשמור מועדפים. השינוי זמין כעת בזיכרון, אך שמירה לאחר רענון אינה מובטחת.')
+    }
+  }
+
   function returnToList() {
     setSelectedCharacterId(null)
     if (!isHome) navigate('/')
@@ -139,6 +175,7 @@ export default function App() {
   return (
     <main className="app">
       <h1>One Piece Explorer</h1>
+      {storageMessage && <p role="status">{storageMessage}</p>}
       <h2 ref={routeHeading} tabIndex={-1}>{isHome ? 'דמויות' : 'פרטי דמות'}</h2>
       {!isHome && <button type="button" className="return-button" onClick={returnToList}>חזרה לרשימה</button>}
       {routeError ? <p role="alert">{routeError}</p> : <>
@@ -152,12 +189,12 @@ export default function App() {
             <p>זהו אוסף מוגבל של עד 25 דמויות מהאנימה המקורית; נטענו {characters.length} דמויות.</p>
             <p>התקצירים והתיאורים עשויים להכיל ספוילרים.</p>
             {hasNextPage && <p>קיימות דמויות נוספות ב־AniList שאינן מוצגות באוסף הזה.</p>}
-            <SearchBar value={searchQuery} onSearchChange={setSearchQuery} />
+            <SearchBar value={searchQuery} onSearchChange={setSearchQuery} favoritesOnly={favoritesOnly} onFavoritesOnlyChange={setFavoritesOnly} />
             <p role="status">נמצאו {visibleCharacters.length} התאמות מתוך {characters.length} דמויות שנטענו.</p>
             <section className="character-list-panel" aria-label="רשימת דמויות">
               {visibleCharacters.length > 0
-                ? <CharacterList characters={visibleCharacters} selectedCharacterId={selectedCharacterId} onSelect={selectCharacter} />
-                : <p>לא נמצאו דמויות באוסף שנטען. נסו שם אחר או נקו את החיפוש.</p>}
+                ? <CharacterList characters={visibleCharacters} selectedCharacterId={selectedCharacterId} onSelect={selectCharacter} favoriteIds={favoriteIds} onToggleFavorite={toggleFavorite} />
+                : <p>{favoritesOnly ? 'לא נמצאו מועדפים תואמים באוסף שנטען. נסו לנקות את החיפוש או לבטל את מסנן המועדפים.' : 'לא נמצאו דמויות באוסף שנטען. נסו שם אחר או נקו את החיפוש.'}</p>}
             </section>
           </> : selectedCharacterId !== routeId
             ? <p role="status">טוען את הבחירה...</p>
