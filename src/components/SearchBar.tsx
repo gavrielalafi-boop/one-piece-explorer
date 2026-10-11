@@ -9,7 +9,7 @@ export default function SearchBar({ value, onSearchChange, favoritesOnly, onFavo
   return (
     <div className="search-bar">
       <label htmlFor="character-search">חיפוש לפי שם באנגלית</label>
-      <p id="search-scope">החיפוש מוגבל לדמויות שנטענו באוסף של עד 25 דמויות.</p>
+      <p id="search-scope">החיפוש מוגבל לדמויות שנטענו באוסף הנבחר של עד 150 דמויות.</p>
       <div className="search-controls">
         <input
           id="character-search"

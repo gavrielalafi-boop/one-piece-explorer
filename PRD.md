@@ -1,41 +1,31 @@
 # PRD — One Piece Explorer
 
 ## 1. Pitch
-A Hebrew RTL app that helps One Piece fans browse character names, images and descriptions from AniList.
+A Hebrew RTL app for exploring a selected collection of up to 150 One Piece characters from AniList. Display: “גלו אוסף נבחר של עד 150 דמויות מעולם One Piece.”
 
 ## 2. Who it is for
-Fans who want to discover characters and read their English descriptions. Descriptions may contain spoilers and source formatting.
+Fans who want to discover characters and read their English descriptions, which may contain spoilers. This is a selected collection, not a complete franchise catalogue or the developer's personal favorites.
 
 ## 3. Screens
-- List: character names, available images and up to four explicitly labeled facts extracted from descriptions, with short cleaned-description excerpts as fallback, name search and a favorites filter; clearly label the limited collection.
-- Details: a separate /characters/:id screen with the selected name, image and full description near the top, plus a return-to-list button; / contains the list and search.
-- React Router supports direct character URLs and Back; unknown routes or IDs outside the loaded collection show a clear message.
+- List: heading and search, then LTR range buttons (1–25, 26–50, etc.) based on currently filtered records, then only the selected page's cards. At most 25 cards per UI page; page changes preserve the heading/search. List URLs use /?page=2; / means page 1.
+- Details at /characters/:id: name, image and full safe description near the top, with return restoring search, favorites filter and list page. Support direct entry, refresh and Back/Forward.
 
 ## 4. Must-have features
-1. Load up to 25 characters from AniList for the original One Piece anime, ordered by role, relevance and character ID, with loading, error and retry states.
-2. Select a character and display its English name, available image and description, with Hebrew feedback for missing content.
-3. Search loaded English names without case sensitivity; label search as limited to this collection and show no-results feedback within it.
-4. Save, remove and filter favorites using localStorage.
-5. Readable Hebrew RTL interface and system messages on desktop/mobile, with React Router navigation; source content remains English and LTR.
+1. Fetch full character records from media 21 using async/await in useEffect, sequentially loading up to six API pages of 25; stop early when hasNextPage is false. Append to a single characters array in App state and display the first 25 immediately.
+2. Show progressive loaded count and a partial-collection notice while loading. If a request fails, retain successful records and retry the failed page. No separate index/cache or static JSON source/fallback.
+3. Search all loaded name.full values with trim and case-insensitive substring matching; combine with favorites-only filtering before slicing into 25-card pages. New search/filter changes start on page 1; clearing search retains the favorites filter.
+4. Keep selectedCharacterId, searchQuery, favoriteIds and favoritesOnly in mounted App, passing data/callbacks through props. Persist only favorite IDs in localStorage; separate favorite buttons never select or navigate.
+5. Keep Hebrew RTL controls, English LTR descriptions, fixed-size images with loading=lazy, accessible keyboard controls and plain CSS. Next design stage: One Piece logo and treasure map, dark colorful background, uniform Flexbox cards with flex-wrap and a fixed footer reading “© 2026 Gavriel Alafi | Design & Development”.
 
 ## 5. Acceptance criteria
-- When I open the app, I see loading followed by up to 25 names/images and a visible limited-collection label; it never claims to include all One Piece characters.
-- When I select a character or open its URL, I see its name, image and full cleaned description with preserved paragraphs, or missing-content feedback; Back/Forward restore the route and selection; returning to the list preserves the search during the current session.
-- When I search “Luffy”, only matching loaded names appear; no matches means none in the loaded collection, not none in One Piece.
-- When an HTTP, network, GraphQL or data error occurs, I see Hebrew error feedback and retry; recovery loads real AniList data without local fallback.
-- Favorites survive reload and can be removed/filtered; mobile has no horizontal scrolling and a failed image does not break the page.
+- First 25 characters appear without waiting for 150; at most six successful API pages are appended, with unique IDs and progress. Partial data is never called complete; completion means the selected scope is loaded, not the whole source.
+- Range buttons reflect current filtered results; only up to 25 cards appear; Router restores page on Back/Forward. Invalid pages show feedback and normalize safely without duplicate navigation.
+- Search/favorites work across all loaded records and never trigger API calls. Returning from details restores list context. Direct IDs resolve from the same array as loading progresses; missing IDs get outside-selected-collection feedback only after successful completion.
+- HTTP/network/JSON/GraphQL/data failures retain prior records and offer retry from the failed page. Cancellation prevents stale appends; 429 respects Retry-After without parallel or repeated-request loops.
+- Favorites persist across refresh with malformed/unavailable-storage feedback and in-memory use; image failures show placeholders and names/descriptions decode numeric and common named entities into safe plain text without URLs, clickable links or injected HTML. Fixed footer never covers content/focus at narrow widths.
 
 ## 6. Not now
-No second API, translation service, backend, accounts, additional franchise media, load-more feature or exhaustive character catalogue. No separate promises for job, abilities or Devil Fruit: these may occur in some descriptions only.
-
-All course requirements and four bonuses remain: simple TypeScript, React Router, localStorage favorites and Vitest tests together in src/tests/ in task 8. Preserve prompt logging, basic checks, manual verification and one-task-at-a-time work.
+No libraries beyond existing dependencies, separate index/cache, full-source download, additional API/backend/translation, or project JSON data source/fallback. Use basic TypeScript, fetch, async/await, useEffect/useState, props, array operations and React Router. Preserve completed tasks 1–7 as history. Task 8 (Vitest in src/tests/ and submission documentation) waits until the collection expansion and subsequent design are implemented and manually verified. This edit implements neither data changes nor design.
 
 ## 7. Data
-Only data source: https://graphql.anilist.co via browser fetch POST with a GraphQL query and variables, without a key, authentication or extra GraphQL library. Images use URLs supplied by AniList, including its image CDN, not a second data API.
-Use verified AniList media ID 21: ONE PIECE, ANIME/TV, started in 1999. The live role/relevance/ID query returned Luffy, Zoro, Nami, Usopp and Sanji within its 25 records. Request its characters with page 1, perPage 25 and ROLE, RELEVANCE, ID ordering; read pageInfo.hasNextPage. Load at most 25 unique records, possibly fewer; do not fetch further pages. Show loaded count and whether more source records exist. This scope covers one AniList media entry, not the whole franchise.
-Fields: id, name.full, image.large and description(asHtml: false); normalize to Character with id, name, imageUrl and description. Nullable/missing image and description are supported. Existing local samples remain historical files, never a production fallback. Verify actual schema, media identity, CORS and images in Chrome during task 4.
-
-
-
-
-
+Only https://graphql.anilist.co via direct browser fetch, without a key or GraphQL library. Media ID 21 is the original One Piece TV anime. Request Media.characters(page:1..6, perPage:25, sort:[ROLE,RELEVANCE,ID]), pageInfo.hasNextPage and id/name.full/image.large/description(asHtml:false). Normalize basic Character records and validate/deduplicate IDs before appending. Use loaded lengths and hasNextPage, not total/lastPage, for decisions. Up to six successful GraphQL requests per app mount, plus necessary failed-request retries; navigation/search/favorites add none. Keep records only in App memory; refresh starts fresh live loading. Use source-supplied CDN images lazily. Historical samples remain unused. The previous complete-collection/index proposal is superseded by this bounded scope selected after the user's syllabus review.

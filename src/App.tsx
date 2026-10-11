@@ -3,6 +3,8 @@ import { matchPath, useLocation, useNavigate } from 'react-router-dom'
 import CharacterDetails from './components/CharacterDetails'
 import CharacterList from './components/CharacterList'
 import SearchBar from './components/SearchBar'
+import Pagination from './components/Pagination'
+import { decodeCharacterText } from './utils/characterDescription'
 import type { Character } from './types'
 
 const favoritesStorageKey = 'one-piece-explorer:favorites'
@@ -23,9 +25,9 @@ function readFavoriteStorage(): { ids: number[]; message: string } {
   }
 }
 
-const query = `query {
+const query = `query($page: Int!) {
   Media(id: 21, type: ANIME) {
-    characters(page: 1, perPage: 25, sort: [ROLE, RELEVANCE, ID]) {
+    characters(page: $page, perPage: 25, sort: [ROLE, RELEVANCE, ID]) {
       pageInfo { hasNextPage }
       nodes { id name { full } image { large } description(asHtml: false) }
     }
@@ -68,7 +70,7 @@ function readCharacters(payload: unknown): { characters: Character[]; hasNextPag
     const imageUrl = isObject(node.image) ? optionalText(node.image.large) : null
     return {
       id: node.id,
-      name: node.name.full,
+      name: decodeCharacterText(node.name.full),
       imageUrl: imageUrl?.startsWith('https://') ? imageUrl : null,
       description: optionalText(node.description),
     }
@@ -77,16 +79,18 @@ function readCharacters(payload: unknown): { characters: Character[]; hasNextPag
 }
 
 export default function App() {
-  const { pathname } = useLocation()
+  const { pathname, search } = useLocation()
   const navigate = useNavigate()
   const routeHeading = useRef<HTMLHeadingElement>(null)
   const isHome = pathname === '/'
   const characterRoute = matchPath('/characters/:id', pathname)
   const rawId = characterRoute?.params.id
   const routeId = rawId && /^[1-9]\d*$/.test(rawId) && Number.isSafeInteger(Number(rawId)) ? Number(rawId) : null
+  const pageValues = new URLSearchParams(search).getAll('page')
+  const rawPage = pageValues[0]
+  const page = rawPage === undefined ? 1 : /^[1-6]$/.test(rawPage) && pageValues.length === 1 ? Number(rawPage) : null
   const [characters, setCharacters] = useState<Character[]>([])
   const [searchQuery, setSearchQuery] = useState('')
-  // Read synchronously before initializing favorites; never write during mounting.
   const [initialFavorites] = useState(readFavoriteStorage)
   const [favoriteIds, setFavoriteIds] = useState<number[]>(initialFavorites.ids)
   const [favoritesOnly, setFavoritesOnly] = useState(false)
@@ -95,67 +99,118 @@ export default function App() {
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading')
   const [errorMessage, setErrorMessage] = useState('')
   const [hasNextPage, setHasNextPage] = useState(false)
+  const [nextApiPage, setNextApiPage] = useState(1)
+  const [loadedPages, setLoadedPages] = useState(0)
+  const [requestCount, setRequestCount] = useState(0)
+  const [retryAt, setRetryAt] = useState(0)
   const [attempt, setAttempt] = useState(0)
+  const [lastListContext, setLastListContext] = useState({ searchQuery: '', favoritesOnly: false, page: 1 })
   const selectedCharacter = characters.find((character) => character.id === selectedCharacterId)
+  const hasSelectedCharacter = selectedCharacter !== undefined
   const normalizedQuery = searchQuery.trim().toLowerCase()
-  const visibleCharacters = characters.filter((character) =>
+  const filteredCharacters = characters.filter((character) =>
     character.name.toLowerCase().includes(normalizedQuery) && (!favoritesOnly || favoriteIds.includes(character.id)))
+  const pageCount = Math.ceil(filteredCharacters.length / 25)
+  const visibleCharacters = page ? filteredCharacters.slice((page - 1) * 25, page * 25) : []
+  const outsidePage = page !== null && page > Math.max(1, pageCount)
 
   useEffect(() => {
-    // Read the route into state only; this effect never navigates.
-    // Browser history is external state; keep the course-required App state in sync.
+    // Browser history is external state; synchronization never navigates.
     // eslint-disable-next-line react/set-state-in-effect
     setSelectedCharacterId((previous) => previous === routeId ? previous : routeId)
   }, [routeId])
 
   useEffect(() => {
+    if (nextApiPage > 6) return
     const controller = new AbortController()
     let active = true
-    async function loadCharacters() {
+    async function loadPage() {
       try {
+        setRequestCount((count) => count + 1)
         const response = await fetch('https://graphql.anilist.co', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-          body: JSON.stringify({ query }),
+          body: JSON.stringify({ query, variables: { page: nextApiPage } }),
           signal: controller.signal,
         })
-        if (!response.ok) throw new Error(`טעינת הדמויות נכשלה (HTTP ${response.status}). נסו שוב.`)
+        if (response.status === 429) {
+          const retryAfter = response.headers.get('Retry-After')
+          const seconds = retryAfter && /^\d+$/.test(retryAfter) ? Number(retryAfter) : null
+          const date = retryAfter ? Date.parse(retryAfter) : NaN
+          const waitMs = seconds !== null ? seconds * 1000 : Number.isFinite(date) ? Math.max(0, date - Date.now()) : 60000
+          if (!active) return
+          setRetryAt(Date.now() + Math.max(3000, waitMs))
+          throw new Error('AniList הגביל את קצב הבקשות. המתינו עד שכפתור הניסיון הנוסף יהיה זמין.')
+        }
+        if (!response.ok) throw new Error(`טעינת עמוד API ${nextApiPage} נכשלה (HTTP ${response.status}).`)
         let payload: unknown
         try { payload = await response.json() }
         catch { throw new Error('השרת החזיר נתונים שאינם JSON תקין.') }
         const result = readCharacters(payload)
+        if (result.characters.length === 0 && result.hasNextPage) throw new Error('התקבל עמוד ריק עם סימון לעמוד נוסף. נסו שוב.')
         if (!active) return
-        setCharacters(result.characters)
+        setCharacters((previous) => [...previous, ...result.characters.filter((character) =>
+          !previous.some((existing) => existing.id === character.id))].slice(0, 150))
+        setLoadedPages((count) => count + 1)
         setHasNextPage(result.hasNextPage)
-        setStatus('success')
+        const finished = !result.hasNextPage || nextApiPage === 6
+        setNextApiPage(finished ? 7 : nextApiPage + 1)
+        if (finished) setStatus('success')
       } catch (error: unknown) {
         if (!active || controller.signal.aborted) return
         setErrorMessage(error instanceof TypeError
           ? 'לא ניתן להתחבר ל־AniList. בדקו את החיבור ונסו שוב.'
-          : error instanceof Error ? error.message : 'טעינת הדמויות נכשלה. נסו שוב.')
+          : error instanceof Error ? error.message : 'טעינת הדמויות נכשלה.')
         setStatus('error')
       }
     }
-    void loadCharacters()
-    return () => { active = false; controller.abort() }
-  }, [attempt])
+    // A deferred first request lets StrictMode cleanup cancel before sending it.
+    const timer = window.setTimeout(() => { void loadPage() }, nextApiPage === 1 ? 0 : 3000)
+    return () => { active = false; window.clearTimeout(timer); controller.abort() }
+  }, [nextApiPage, attempt])
+
+  useEffect(() => {
+    if (!retryAt) return
+    const timer = window.setTimeout(() => setRetryAt(0), Math.max(0, retryAt - Date.now()))
+    return () => window.clearTimeout(timer)
+  }, [retryAt])
 
   useEffect(() => {
     const heading = document.getElementById('character-details-heading') ?? routeHeading.current
     heading?.focus({ preventScroll: true })
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
-  }, [pathname, status, selectedCharacterId])
+  }, [pathname, selectedCharacterId, hasSelectedCharacter])
+
+  function changePage(number: number, replace = false) {
+    const target = `/?page=${number}`
+    if (`${pathname}${search}` !== target) navigate(target, { replace })
+  }
+
+  function changeSearch(value: string) {
+    setSearchQuery(value)
+    changePage(1, true)
+  }
+
+  function changeFavoritesFilter(value: boolean) {
+    setFavoritesOnly(value)
+    changePage(1, true)
+  }
 
   function selectCharacter(id: number) {
+    setLastListContext({ searchQuery, favoritesOnly, page: page ?? 1 })
     setSelectedCharacterId(id)
-    const targetPath = `/characters/${id}`
-    if (pathname !== targetPath) navigate(targetPath)
+    const target = `/characters/${id}`
+    if (pathname !== target) navigate(target)
   }
 
   function toggleFavorite(id: number) {
     const nextIds = favoriteIds.includes(id) ? favoriteIds.filter((favoriteId) => favoriteId !== id) : [...favoriteIds, id]
     setFavoriteIds(nextIds)
-    // Persist only an explicit user change, after the initial read has finished.
+    if (favoritesOnly && page) {
+      const remaining = characters.filter((character) => nextIds.includes(character.id) && character.name.toLowerCase().includes(normalizedQuery))
+      const lastPage = Math.max(1, Math.ceil(remaining.length / 25))
+      if (page > lastPage) changePage(lastPage, true)
+    }
     try {
       localStorage.setItem(favoritesStorageKey, JSON.stringify(nextIds))
       setStorageMessage('')
@@ -166,7 +221,16 @@ export default function App() {
 
   function returnToList() {
     setSelectedCharacterId(null)
-    if (!isHome) navigate('/')
+    setSearchQuery(lastListContext.searchQuery)
+    setFavoritesOnly(lastListContext.favoritesOnly)
+    changePage(lastListContext.page)
+  }
+
+  function retryLoading() {
+    if (retryAt > Date.now()) return
+    setStatus('loading')
+    setErrorMessage('')
+    setAttempt((value) => value + 1)
   }
 
   const routeError = !isHome && !characterRoute ? 'הכתובת אינה מוכרת.'
@@ -175,37 +239,38 @@ export default function App() {
   return (
     <main className="app">
       <h1>One Piece Explorer</h1>
+      <p>גלו אוסף נבחר של עד 150 דמויות מעולם One Piece.</p>
       {storageMessage && <p role="status">{storageMessage}</p>}
       <h2 ref={routeHeading} tabIndex={-1}>{isHome ? 'דמויות' : 'פרטי דמות'}</h2>
       {!isHome && <button type="button" className="return-button" onClick={returnToList}>חזרה לרשימה</button>}
-      {routeError ? <p role="alert">{routeError}</p> : <>
-        {status === 'loading' && <p role="status">טוען דמויות מ־AniList...</p>}
-        {status === 'error' && <div role="alert">
-          <p>{errorMessage}</p>
-          <button type="button" onClick={() => { setStatus('loading'); setErrorMessage(''); setAttempt((value) => value + 1) }}>ניסיון נוסף</button>
-        </div>}
-        {status === 'success' && <>
-          {isHome ? <>
-            <p>זהו אוסף מוגבל של עד 25 דמויות מהאנימה המקורית; נטענו {characters.length} דמויות.</p>
-            <p>התקצירים והתיאורים עשויים להכיל ספוילרים.</p>
-            {hasNextPage && <p>קיימות דמויות נוספות ב־AniList שאינן מוצגות באוסף הזה.</p>}
-            <SearchBar value={searchQuery} onSearchChange={setSearchQuery} favoritesOnly={favoritesOnly} onFavoritesOnlyChange={setFavoritesOnly} />
-            <p role="status">נמצאו {visibleCharacters.length} התאמות מתוך {characters.length} דמויות שנטענו.</p>
-            <section className="character-list-panel" aria-label="רשימת דמויות">
-              {visibleCharacters.length > 0
-                ? <CharacterList characters={visibleCharacters} selectedCharacterId={selectedCharacterId} onSelect={selectCharacter} favoriteIds={favoriteIds} onToggleFavorite={toggleFavorite} />
-                : <p>{favoritesOnly ? 'לא נמצאו מועדפים תואמים באוסף שנטען. נסו לנקות את החיפוש או לבטל את מסנן המועדפים.' : 'לא נמצאו דמויות באוסף שנטען. נסו שם אחר או נקו את החיפוש.'}</p>}
-            </section>
-          </> : selectedCharacterId !== routeId
-            ? <p role="status">טוען את הבחירה...</p>
-            : selectedCharacter
-            ? <div className="character-details-panel">
-              <p>התיאור עשוי להכיל ספוילרים.</p>
-              <CharacterDetails key={selectedCharacterId} character={selectedCharacter} />
-            </div>
-            : <p role="alert">הדמות אינה באוסף של עד 25 הדמויות שנטענו.</p>}
-        </>}
-      </>}
+      <p role="status">נטענו {characters.length} דמויות ב־{loadedPages} עמודי API; נשלחו {requestCount} בקשות.</p>
+      {status === 'loading' && <p role="status">האוסף עדיין חלקי: טוען עמוד API {nextApiPage} מתוך עד 6. החיפוש והמועדפים פועלים על הדמויות שכבר נטענו.</p>}
+      {status === 'error' && <div role="alert">
+        <p>{errorMessage} האוסף חלקי; הדמויות שכבר נטענו נשמרו.</p>
+        <button type="button" disabled={retryAt > 0} onClick={retryLoading}>ניסיון נוסף</button>
+      </div>}
+      {status === 'success' && <p>טעינת האוסף הנבחר הסתיימה.{hasNextPage && ' קיימות דמויות נוספות במקור שאינן באוסף הזה.'}</p>}
+      {routeError ? <p role="alert">{routeError}</p> : isHome ? <>
+        <p>התקצירים והתיאורים עשויים להכיל ספוילרים.</p>
+        <SearchBar value={searchQuery} onSearchChange={changeSearch} favoritesOnly={favoritesOnly} onFavoritesOnlyChange={changeFavoritesFilter} />
+        <p role="status">נמצאו {filteredCharacters.length} התאמות מתוך {characters.length} דמויות שנטענו.</p>
+        <Pagination count={filteredCharacters.length} page={page ?? 1} onPageChange={changePage} />
+        {page === null || (outsidePage && status === 'success') ? <div role="alert">
+          <p>מספר העמוד אינו תקין או מחוץ לטווח התוצאות.</p>
+          <button type="button" onClick={() => changePage(1, true)}>לעמוד הראשון</button>
+        </div> : outsidePage ? <p role="status">עמוד התצוגה המבוקש עדיין אינו זמין באוסף החלקי. ממתינים להמשך הטעינה.</p> :
+          <section className="character-list-panel" aria-label="רשימת דמויות">
+            {visibleCharacters.length > 0
+              ? <CharacterList characters={visibleCharacters} selectedCharacterId={selectedCharacterId} onSelect={selectCharacter} favoriteIds={favoriteIds} onToggleFavorite={toggleFavorite} />
+              : <p>{status !== 'success' ? 'אין כרגע התאמות בדמויות שנטענו. תוצאות נוספות עשויות להגיע בהמשך הטעינה.'
+                : favoritesOnly ? 'לא נמצאו מועדפים תואמים באוסף הנבחר. נסו לנקות חיפוש או לבטל את המסנן.' : 'לא נמצאו התאמות באוסף הנבחר. נסו שם אחר או נקו את החיפוש.'}</p>}
+          </section>}
+      </> : selectedCharacterId !== routeId ? <p role="status">טוען את הבחירה...</p>
+        : selectedCharacter ? <div className="character-details-panel">
+          <p>התיאור עשוי להכיל ספוילרים.</p>
+          <CharacterDetails key={selectedCharacterId} character={selectedCharacter} />
+        </div> : status === 'success' ? <p role="alert">הדמות אינה באוסף הנבחר של עד 150 דמויות שנטענו.</p>
+          : <p role="status">פרטי הדמות עדיין לא הגיעו. יש להשלים את טעינת האוסף הנבחר.</p>}
     </main>
   )
 }

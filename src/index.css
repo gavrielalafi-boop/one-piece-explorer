@@ -237,3 +237,24 @@ button:focus-visible, input:focus-visible {
   gap: 0.5rem;
   margin-top: 0.75rem;
 }
+
+.pagination {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+
+.pagination button {
+  padding: 0.5rem 0.75rem;
+  color: #172b40;
+  background: #fff;
+  border: 1px solid #637a90;
+  border-radius: 4px;
+}
+
+.pagination button[aria-current="page"] {
+  background: #e3effc;
+  border: 2px solid #07579c;
+  font-weight: bold;
+}
