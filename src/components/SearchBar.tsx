@@ -9,14 +9,12 @@ export default function SearchBar({ value, onSearchChange, favoritesOnly, onFavo
   return (
     <div className="search-bar">
       <label htmlFor="character-search">חיפוש לפי שם באנגלית</label>
-      <p id="search-scope">החיפוש מוגבל לדמויות שנטענו באוסף הנבחר של עד 150 דמויות.</p>
       <div className="search-controls">
         <input
           id="character-search"
           type="search"
           dir="ltr"
           value={value}
-          aria-describedby="search-scope"
           onChange={(event) => onSearchChange(event.target.value)}
         />
         <button type="button" onClick={() => onSearchChange('')} disabled={!value}>ניקוי חיפוש</button>

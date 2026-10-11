@@ -4,6 +4,8 @@ import CharacterDetails from './components/CharacterDetails'
 import CharacterList from './components/CharacterList'
 import SearchBar from './components/SearchBar'
 import Pagination from './components/Pagination'
+import Header from './components/Header'
+import Footer from './components/Footer'
 import { decodeCharacterText } from './utils/characterDescription'
 import type { Character } from './types'
 
@@ -98,10 +100,7 @@ export default function App() {
   const [selectedCharacterId, setSelectedCharacterId] = useState<number | null>(routeId)
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading')
   const [errorMessage, setErrorMessage] = useState('')
-  const [hasNextPage, setHasNextPage] = useState(false)
   const [nextApiPage, setNextApiPage] = useState(1)
-  const [loadedPages, setLoadedPages] = useState(0)
-  const [requestCount, setRequestCount] = useState(0)
   const [retryAt, setRetryAt] = useState(0)
   const [attempt, setAttempt] = useState(0)
   const [lastListContext, setLastListContext] = useState({ searchQuery: '', favoritesOnly: false, page: 1 })
@@ -126,7 +125,6 @@ export default function App() {
     let active = true
     async function loadPage() {
       try {
-        setRequestCount((count) => count + 1)
         const response = await fetch('https://graphql.anilist.co', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
@@ -142,7 +140,7 @@ export default function App() {
           setRetryAt(Date.now() + Math.max(3000, waitMs))
           throw new Error('AniList הגביל את קצב הבקשות. המתינו עד שכפתור הניסיון הנוסף יהיה זמין.')
         }
-        if (!response.ok) throw new Error(`טעינת עמוד API ${nextApiPage} נכשלה (HTTP ${response.status}).`)
+        if (!response.ok) throw new Error(`טעינת הדמויות נכשלה (HTTP ${response.status}).`)
         let payload: unknown
         try { payload = await response.json() }
         catch { throw new Error('השרת החזיר נתונים שאינם JSON תקין.') }
@@ -151,8 +149,6 @@ export default function App() {
         if (!active) return
         setCharacters((previous) => [...previous, ...result.characters.filter((character) =>
           !previous.some((existing) => existing.id === character.id))].slice(0, 150))
-        setLoadedPages((count) => count + 1)
-        setHasNextPage(result.hasNextPage)
         const finished = !result.hasNextPage || nextApiPage === 6
         setNextApiPage(finished ? 7 : nextApiPage + 1)
         if (finished) setStatus('success')
@@ -237,23 +233,21 @@ export default function App() {
     : characterRoute && routeId === null ? 'מזהה הדמות אינו תקין.' : null
 
   return (
+    <>
+    <Header />
     <main className="app">
-      <h1>One Piece Explorer</h1>
-      <p>גלו אוסף נבחר של עד 150 דמויות מעולם One Piece.</p>
       {storageMessage && <p role="status">{storageMessage}</p>}
       <h2 ref={routeHeading} tabIndex={-1}>{isHome ? 'דמויות' : 'פרטי דמות'}</h2>
       {!isHome && <button type="button" className="return-button" onClick={returnToList}>חזרה לרשימה</button>}
-      <p role="status">נטענו {characters.length} דמויות ב־{loadedPages} עמודי API; נשלחו {requestCount} בקשות.</p>
-      {status === 'loading' && <p role="status">האוסף עדיין חלקי: טוען עמוד API {nextApiPage} מתוך עד 6. החיפוש והמועדפים פועלים על הדמויות שכבר נטענו.</p>}
+      {status === 'loading' && <p role="status">{characters.length > 0 ? 'טוען דמויות נוספות…' : 'טוען דמויות…'}</p>}
       {status === 'error' && <div role="alert">
         <p>{errorMessage} האוסף חלקי; הדמויות שכבר נטענו נשמרו.</p>
         <button type="button" disabled={retryAt > 0} onClick={retryLoading}>ניסיון נוסף</button>
       </div>}
-      {status === 'success' && <p>טעינת האוסף הנבחר הסתיימה.{hasNextPage && ' קיימות דמויות נוספות במקור שאינן באוסף הזה.'}</p>}
       {routeError ? <p role="alert">{routeError}</p> : isHome ? <>
         <p>התקצירים והתיאורים עשויים להכיל ספוילרים.</p>
         <SearchBar value={searchQuery} onSearchChange={changeSearch} favoritesOnly={favoritesOnly} onFavoritesOnlyChange={changeFavoritesFilter} />
-        <p role="status">נמצאו {filteredCharacters.length} התאמות מתוך {characters.length} דמויות שנטענו.</p>
+        <p role="status">נמצאו {filteredCharacters.length} התאמות.</p>
         <Pagination count={filteredCharacters.length} page={page ?? 1} onPageChange={changePage} />
         {page === null || (outsidePage && status === 'success') ? <div role="alert">
           <p>מספר העמוד אינו תקין או מחוץ לטווח התוצאות.</p>
@@ -265,6 +259,7 @@ export default function App() {
               : <p>{status !== 'success' ? 'אין כרגע התאמות בדמויות שנטענו. תוצאות נוספות עשויות להגיע בהמשך הטעינה.'
                 : favoritesOnly ? 'לא נמצאו מועדפים תואמים באוסף הנבחר. נסו לנקות חיפוש או לבטל את המסנן.' : 'לא נמצאו התאמות באוסף הנבחר. נסו שם אחר או נקו את החיפוש.'}</p>}
           </section>}
+        <p>מוצג אוסף נבחר של עד 150 דמויות.</p>
       </> : selectedCharacterId !== routeId ? <p role="status">טוען את הבחירה...</p>
         : selectedCharacter ? <div className="character-details-panel">
           <p>התיאור עשוי להכיל ספוילרים.</p>
@@ -272,5 +267,7 @@ export default function App() {
         </div> : status === 'success' ? <p role="alert">הדמות אינה באוסף הנבחר של עד 150 דמויות שנטענו.</p>
           : <p role="status">פרטי הדמות עדיין לא הגיעו. יש להשלים את טעינת האוסף הנבחר.</p>}
     </main>
+    <Footer />
+    </>
   )
 }
