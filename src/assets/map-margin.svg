@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="920" viewBox="0 0 160 920" fill="none">
+  <g stroke="#c9a663" opacity=".2">
+    <path d="M12 0v920M148 0v920M0 32h160M0 888h160" stroke-width=".5"/>
+    <path d="M0 78l35 12 12 42-23 29 12 43-36 32M160 490l-28 12-18 36 19 26-8 51 35 20M0 732l31-14 20 33-15 47 8 32-44 14" stroke-width="1.5"/>
+    <path d="M5 89l23 9 10 32-22 30 12 41-28 22M160 504l-20 8-17 24 18 27-8 48 27 13" stroke-width=".5"/>
+    <path d="M38 352c105 40 75 138 24 167s-18 113 41 152-22 125-49 160" stroke-dasharray="4 8"/>
+    <path d="M31 345l14 14m0-14-14 14M48 824l14 14m0-14-14 14"/>
+    <g transform="translate(80 270)">
+      <circle r="62"/><circle r="55"/><circle r="39" stroke-width=".5"/>
+      <path d="M0-76V76M-76 0H76M-48-48l96 96M48-48l-96 96" stroke-width=".5"/>
+      <path d="M0-55l10 45 45 10-45 10L0 55l-10-45-45-10 45-10Z"/>
+      <path d="M0-55v55H55L10 10 0 55V0H-55l45-10Z" fill="#c9a663" fill-opacity=".35"/>
+      <circle r="5"/>
+      <path d="M-4-65v-8l8 8v-8"/>
+    </g>
+    <g stroke-width=".5" opacity=".5">
+      <path d="M55 0l32 95M110 0L70 145M0 410l160 80M0 680l160-55M0 875l160-60"/>
+      <circle cx="145" cy="845" r="48"/><circle cx="145" cy="845" r="40"/>
+    </g>
+  </g>
+</svg>

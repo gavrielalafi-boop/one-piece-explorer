@@ -255,9 +255,8 @@ export default function App() {
       </div>}
       <Routes>
       <Route path="/" element={<>
-        <p>התקצירים והתיאורים עשויים להכיל ספוילרים.</p>
         <SearchBar value={searchQuery} onSearchChange={changeSearch} favoritesOnly={favoritesOnly} onFavoritesOnlyChange={changeFavoritesFilter} />
-        <p role="status">נמצאו {filteredCharacters.length} התאמות.</p>
+        <p className="list-count" role="status">נמצאו {filteredCharacters.length} התאמות.</p>
         <Pagination count={filteredCharacters.length} page={page ?? 1} onPageChange={changePage} />
         {page === null || (outsidePage && status === 'success') ? <div role="alert">
           <p>מספר העמוד אינו תקין או מחוץ לטווח התוצאות.</p>
@@ -269,7 +268,7 @@ export default function App() {
               : <p>{status !== 'success' ? 'אין כרגע התאמות בדמויות שנטענו. תוצאות נוספות עשויות להגיע בהמשך הטעינה.'
                 : favoritesOnly ? 'לא נמצאו מועדפים תואמים באוסף הנבחר. נסו לנקות חיפוש או לבטל את המסנן.' : 'לא נמצאו התאמות באוסף הנבחר. נסו שם אחר או נקו את החיפוש.'}</p>}
           </section>}
-        <p>מוצג אוסף נבחר של עד 150 דמויות.</p>
+        <p className="collection-note">אוסף נבחר של עד 150 דמויות. התיאורים עשויים להכיל ספוילרים.</p>
       </>} />
       <Route path="/characters/:id" element={<CharacterPage
         character={selectedCharacter} selectedCharacterId={selectedCharacterId}
