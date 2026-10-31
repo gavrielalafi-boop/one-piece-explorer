@@ -10,7 +10,7 @@ Planning only. Tasks 1–2 use JavaScript; task 3 explicitly converts existing f
 | src/App.tsx | Own data, selectedCharacterId state, request state, search and favorites; synchronize selection with routes, compose list/details and fetch in useEffect. |
 | src/App.css, src/index.css | Adapt existing styles for Hebrew RTL, visible focus and responsive layout. |
 | src/types.ts | Task 4 Character: numeric id, English name, nullable imageUrl and description; normalize AniList name.full and image.large. Remove separate crew/fruit/job fields from the live model; props types stay in component files. |
-| src/data/characters.sample.json | At least five samples for tasks 1–2; retain after API integration. |
+| Former src/data/characters.sample.json | Used for the initial tasks 1–2 and removed from the current version; its history is preserved in Git. Live character data comes from AniList only. |
 | src/components/Header.tsx | Heading and home link. |
 | src/components/SearchBar.tsx | Controlled search and favorites-only control. |
 | src/components/CharacterList.tsx | Map cards with unique character ID keys. |
