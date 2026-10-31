@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { matchPath, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import CharacterPage from './pages/CharacterPage'
+import FavoritesPage from './pages/FavoritesPage'
 import Navigation from './components/Navigation'
 import CharacterList from './components/CharacterList'
 import SearchBar from './components/SearchBar'
@@ -103,6 +104,7 @@ export default function App() {
   const [retryAt, setRetryAt] = useState(0)
   const [attempt, setAttempt] = useState(0)
   const [lastListContext, setLastListContext] = useState({ searchQuery: '', favoritesOnly: false, page: 1 })
+  const [detailsOrigin, setDetailsOrigin] = useState('/')
   const selectedCharacter = characters.find((character) => character.id === selectedCharacterId)
   const hasSelectedCharacter = selectedCharacter !== undefined
   const normalizedQuery = searchQuery.trim().toLowerCase()
@@ -192,7 +194,8 @@ export default function App() {
   }
 
   function selectCharacter(id: number) {
-    setLastListContext({ searchQuery, favoritesOnly, page: page ?? 1 })
+    setDetailsOrigin(pathname === '/favorites' ? '/favorites' : '/')
+    if (isHome) setLastListContext({ searchQuery, favoritesOnly, page: page ?? 1 })
     setSelectedCharacterId(id)
     const target = `/characters/${id}`
     if (pathname !== target) navigate(target)
@@ -201,7 +204,7 @@ export default function App() {
   function toggleFavorite(id: number) {
     const nextIds = favoriteIds.includes(id) ? favoriteIds.filter((favoriteId) => favoriteId !== id) : [...favoriteIds, id]
     setFavoriteIds(nextIds)
-    if (favoritesOnly && page) {
+    if (isHome && favoritesOnly && page) {
       const remaining = characters.filter((character) => nextIds.includes(character.id) && character.name.toLowerCase().includes(normalizedQuery))
       const lastPage = Math.max(1, Math.ceil(remaining.length / 25))
       if (page > lastPage) changePage(lastPage, true)
@@ -216,6 +219,10 @@ export default function App() {
 
   function returnToList() {
     setSelectedCharacterId(null)
+    if (characterRoute && detailsOrigin === '/favorites') {
+      navigate('/favorites')
+      return
+    }
     setSearchQuery(lastListContext.searchQuery)
     setFavoritesOnly(lastListContext.favoritesOnly)
     changePage(lastListContext.page)
@@ -235,7 +242,9 @@ export default function App() {
     <main className="app">
       {storageMessage && <p role="status">{storageMessage}</p>}
       <h2 ref={routeHeading} tabIndex={-1}>{isHome ? 'דמויות' : pathname === '/favorites' ? 'המועדפים שלי' : pathname === '/random' ? 'דמות אקראית' : characterRoute ? 'פרטי דמות' : 'עמוד לא נמצא'}</h2>
-      {!isHome && <button type="button" className="return-button" onClick={returnToList}>חזרה לרשימה</button>}
+      {!isHome && <button type="button" className="return-button" onClick={returnToList}>
+        {characterRoute && detailsOrigin === '/favorites' ? 'חזרה למועדפים' : 'חזרה לרשימה'}
+      </button>}
       {status === 'loading' && <p role="status">{characters.length > 0 ? 'טוען דמויות נוספות…' : 'טוען דמויות…'}</p>}
       {status === 'error' && <div role="alert">
         <p>{errorMessage} האוסף חלקי; הדמויות שכבר נטענו נשמרו.</p>
@@ -262,7 +271,10 @@ export default function App() {
       <Route path="/characters/:id" element={<CharacterPage
         character={selectedCharacter} selectedCharacterId={selectedCharacterId}
         onSelectionChange={setSelectedCharacterId} status={status} />} />
-      <Route path="/favorites" element={<p>עמוד המועדפים יתווסף בשלב הבא.</p>} />
+      <Route path="/favorites" element={<FavoritesPage
+        characters={characters} favoriteIds={favoriteIds} status={status}
+        selectedCharacterId={selectedCharacterId} onSelect={selectCharacter}
+        onToggleFavorite={toggleFavorite} />} />
       <Route path="/random" element={<p>עמוד הדמות האקראית יתווסף בהמשך.</p>} />
       <Route path="*" element={<p role="alert">הכתובת אינה מוכרת.</p>} />
       </Routes>
