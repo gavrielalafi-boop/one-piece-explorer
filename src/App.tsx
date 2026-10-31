@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
-import { matchPath, useLocation, useNavigate } from 'react-router-dom'
-import CharacterDetails from './components/CharacterDetails'
+import { matchPath, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
+import CharacterPage from './pages/CharacterPage'
+import Navigation from './components/Navigation'
 import CharacterList from './components/CharacterList'
 import SearchBar from './components/SearchBar'
 import Pagination from './components/Pagination'
@@ -85,9 +86,7 @@ export default function App() {
   const navigate = useNavigate()
   const routeHeading = useRef<HTMLHeadingElement>(null)
   const isHome = pathname === '/'
-  const characterRoute = matchPath('/characters/:id', pathname)
-  const rawId = characterRoute?.params.id
-  const routeId = rawId && /^[1-9]\d*$/.test(rawId) && Number.isSafeInteger(Number(rawId)) ? Number(rawId) : null
+  const characterRoute = Boolean(matchPath('/characters/:id', pathname))
   const pageValues = new URLSearchParams(search).getAll('page')
   const rawPage = pageValues[0]
   const page = rawPage === undefined ? 1 : /^[1-6]$/.test(rawPage) && pageValues.length === 1 ? Number(rawPage) : null
@@ -97,7 +96,7 @@ export default function App() {
   const [favoriteIds, setFavoriteIds] = useState<number[]>(initialFavorites.ids)
   const [favoritesOnly, setFavoritesOnly] = useState(false)
   const [storageMessage, setStorageMessage] = useState(initialFavorites.message)
-  const [selectedCharacterId, setSelectedCharacterId] = useState<number | null>(routeId)
+  const [selectedCharacterId, setSelectedCharacterId] = useState<number | null>(null)
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading')
   const [errorMessage, setErrorMessage] = useState('')
   const [nextApiPage, setNextApiPage] = useState(1)
@@ -116,8 +115,8 @@ export default function App() {
   useEffect(() => {
     // Browser history is external state; synchronization never navigates.
     // eslint-disable-next-line react/set-state-in-effect
-    setSelectedCharacterId((previous) => previous === routeId ? previous : routeId)
-  }, [routeId])
+    if (!characterRoute) setSelectedCharacterId(null)
+  }, [characterRoute])
 
   useEffect(() => {
     if (nextApiPage > 6) return
@@ -229,22 +228,21 @@ export default function App() {
     setAttempt((value) => value + 1)
   }
 
-  const routeError = !isHome && !characterRoute ? 'הכתובת אינה מוכרת.'
-    : characterRoute && routeId === null ? 'מזהה הדמות אינו תקין.' : null
-
   return (
     <>
     <Header />
+    <Navigation />
     <main className="app">
       {storageMessage && <p role="status">{storageMessage}</p>}
-      <h2 ref={routeHeading} tabIndex={-1}>{isHome ? 'דמויות' : 'פרטי דמות'}</h2>
+      <h2 ref={routeHeading} tabIndex={-1}>{isHome ? 'דמויות' : pathname === '/favorites' ? 'המועדפים שלי' : pathname === '/random' ? 'דמות אקראית' : characterRoute ? 'פרטי דמות' : 'עמוד לא נמצא'}</h2>
       {!isHome && <button type="button" className="return-button" onClick={returnToList}>חזרה לרשימה</button>}
       {status === 'loading' && <p role="status">{characters.length > 0 ? 'טוען דמויות נוספות…' : 'טוען דמויות…'}</p>}
       {status === 'error' && <div role="alert">
         <p>{errorMessage} האוסף חלקי; הדמויות שכבר נטענו נשמרו.</p>
         <button type="button" disabled={retryAt > 0} onClick={retryLoading}>ניסיון נוסף</button>
       </div>}
-      {routeError ? <p role="alert">{routeError}</p> : isHome ? <>
+      <Routes>
+      <Route path="/" element={<>
         <p>התקצירים והתיאורים עשויים להכיל ספוילרים.</p>
         <SearchBar value={searchQuery} onSearchChange={changeSearch} favoritesOnly={favoritesOnly} onFavoritesOnlyChange={changeFavoritesFilter} />
         <p role="status">נמצאו {filteredCharacters.length} התאמות.</p>
@@ -260,12 +258,14 @@ export default function App() {
                 : favoritesOnly ? 'לא נמצאו מועדפים תואמים באוסף הנבחר. נסו לנקות חיפוש או לבטל את המסנן.' : 'לא נמצאו התאמות באוסף הנבחר. נסו שם אחר או נקו את החיפוש.'}</p>}
           </section>}
         <p>מוצג אוסף נבחר של עד 150 דמויות.</p>
-      </> : selectedCharacterId !== routeId ? <p role="status">טוען את הבחירה...</p>
-        : selectedCharacter ? <div className="character-details-panel">
-          <p>התיאור עשוי להכיל ספוילרים.</p>
-          <CharacterDetails key={selectedCharacterId} character={selectedCharacter} />
-        </div> : status === 'success' ? <p role="alert">הדמות אינה באוסף הנבחר של עד 150 דמויות שנטענו.</p>
-          : <p role="status">פרטי הדמות עדיין לא הגיעו. יש להשלים את טעינת האוסף הנבחר.</p>}
+      </>} />
+      <Route path="/characters/:id" element={<CharacterPage
+        character={selectedCharacter} selectedCharacterId={selectedCharacterId}
+        onSelectionChange={setSelectedCharacterId} status={status} />} />
+      <Route path="/favorites" element={<p>עמוד המועדפים יתווסף בשלב הבא.</p>} />
+      <Route path="/random" element={<p>עמוד הדמות האקראית יתווסף בהמשך.</p>} />
+      <Route path="*" element={<p role="alert">הכתובת אינה מוכרת.</p>} />
+      </Routes>
     </main>
     <Footer />
     </>

@@ -33,6 +33,10 @@ button:focus-visible, input:focus-visible, [tabindex="-1"]:focus-visible {
 .hero-logo { display: block; width: min(100%, 560px); height: auto; margin: 1.25rem auto; }
 .hero h1 { margin: .6rem 0 1rem; font-size: clamp(1.15rem, 3vw, 1.5rem); line-height: 1.4; color: #eef3f7; }
 .hero-content > p:last-child { margin-bottom: 0; }
+.site-navigation { display: flex; flex-wrap: wrap; justify-content: center; gap: .75rem; padding: 1rem; }
+.site-navigation a { color: #eef3f7; padding: .6rem .9rem; border: 1px solid var(--border); border-radius: 8px; text-decoration: none; }
+.site-navigation a[aria-current="page"] { color: #07111e; background: var(--gold); font-weight: 700; }
+.site-navigation a:focus-visible { outline: 3px solid var(--gold); outline-offset: 4px; }
 .app { max-width: 1320px; margin: auto; padding: 1.5rem 1.25rem calc(var(--footer-height) + 2.5rem + env(safe-area-inset-bottom)); overflow-wrap: anywhere; }
 .app > h2 { color: var(--gold); margin-top: 0; }
 .app > p { color: #c4d1de; }
