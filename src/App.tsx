@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { matchPath, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import CharacterPage from './pages/CharacterPage'
 import FavoritesPage from './pages/FavoritesPage'
+import RandomCharacterPage from './pages/RandomCharacterPage'
 import Navigation from './components/Navigation'
 import CharacterList from './components/CharacterList'
 import SearchBar from './components/SearchBar'
@@ -105,6 +106,7 @@ export default function App() {
   const [attempt, setAttempt] = useState(0)
   const [lastListContext, setLastListContext] = useState({ searchQuery: '', favoritesOnly: false, page: 1 })
   const [detailsOrigin, setDetailsOrigin] = useState('/')
+  const [randomCharacterId, setRandomCharacterId] = useState<number | null>(null)
   const selectedCharacter = characters.find((character) => character.id === selectedCharacterId)
   const hasSelectedCharacter = selectedCharacter !== undefined
   const normalizedQuery = searchQuery.trim().toLowerCase()
@@ -194,7 +196,7 @@ export default function App() {
   }
 
   function selectCharacter(id: number) {
-    setDetailsOrigin(pathname === '/favorites' ? '/favorites' : '/')
+    setDetailsOrigin(pathname === '/favorites' || pathname === '/random' ? pathname : '/')
     if (isHome) setLastListContext({ searchQuery, favoritesOnly, page: page ?? 1 })
     setSelectedCharacterId(id)
     const target = `/characters/${id}`
@@ -219,8 +221,8 @@ export default function App() {
 
   function returnToList() {
     setSelectedCharacterId(null)
-    if (characterRoute && detailsOrigin === '/favorites') {
-      navigate('/favorites')
+    if (characterRoute && (detailsOrigin === '/favorites' || detailsOrigin === '/random')) {
+      navigate(detailsOrigin)
       return
     }
     setSearchQuery(lastListContext.searchQuery)
@@ -243,7 +245,8 @@ export default function App() {
       {storageMessage && <p role="status">{storageMessage}</p>}
       <h2 ref={routeHeading} tabIndex={-1}>{isHome ? 'דמויות' : pathname === '/favorites' ? 'המועדפים שלי' : pathname === '/random' ? 'דמות אקראית' : characterRoute ? 'פרטי דמות' : 'עמוד לא נמצא'}</h2>
       {!isHome && <button type="button" className="return-button" onClick={returnToList}>
-        {characterRoute && detailsOrigin === '/favorites' ? 'חזרה למועדפים' : 'חזרה לרשימה'}
+        {characterRoute && detailsOrigin === '/favorites' ? 'חזרה למועדפים'
+          : characterRoute && detailsOrigin === '/random' ? 'חזרה לדמות האקראית' : 'חזרה לרשימה'}
       </button>}
       {status === 'loading' && <p role="status">{characters.length > 0 ? 'טוען דמויות נוספות…' : 'טוען דמויות…'}</p>}
       {status === 'error' && <div role="alert">
@@ -275,7 +278,10 @@ export default function App() {
         characters={characters} favoriteIds={favoriteIds} status={status}
         selectedCharacterId={selectedCharacterId} onSelect={selectCharacter}
         onToggleFavorite={toggleFavorite} />} />
-      <Route path="/random" element={<p>עמוד הדמות האקראית יתווסף בהמשך.</p>} />
+      <Route path="/random" element={<RandomCharacterPage
+        characters={characters} status={status} randomCharacterId={randomCharacterId}
+        onRandomCharacterChange={setRandomCharacterId} selectedCharacterId={selectedCharacterId}
+        favoriteIds={favoriteIds} onSelect={selectCharacter} onToggleFavorite={toggleFavorite} />} />
       <Route path="*" element={<p role="alert">הכתובת אינה מוכרת.</p>} />
       </Routes>
     </main>
