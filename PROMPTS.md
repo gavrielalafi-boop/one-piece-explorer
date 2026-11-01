@@ -1891,6 +1891,198 @@
 > 
 > הציגי את מזהה ה־commit ואת מצב Git הסופי. אל תשני מסמכי תכנון ואל תתחילי שלב נוסף.
 
+## 2026-11-01
+
+**18:22 · codex**
+
+> # Overview
+> 
+> Generate 0 to 3 hyperpersonalized suggestions for what this user can do with Codex in this local project: C:\Users\daniel\Desktop\new_final_web\one-piece-explorer\one-piece-explorer
+> 
+> 
+> Get an understanding of the user's intent and goals by deeply viewing their connected apps. Suggest actionable tasks that they would actually act on/click.
+> Infer what the user works on and their style from their connected apps.
+> Optimize for relief: choose suggestions that make the user's life easier, reduce an open loop, unblock work, or prepare them for something that is about to matter. Do not suggest tasks that merely sound productive or create more work for the user.
+> The best suggestions feel like Codex read the user's mind: by synthesizing signals across apps, it discovers something the user did not yet know and proposes the concrete next action they would want to take.
+> 
+> Serve this specific user. Do not suggest generic project-quality, onboarding, exploration, cleanup, refactor, documentation, test-writing, or dependency-update tasks merely because they could be useful to someone who owns this project.
+> Your job is to predict what this user specifically needs to get done.
+> 
+> 
+> 
+> # Rules
+> 
+> Use relevant connected apps or MCP sources available in this session, including Sites, Pets, Codex Document Control, Hotline, Plugin Management, Safety Settings, and Search Service when those connectors are installed.
+> 
+>  For local project suggestions, make sure suggestions are truly relevant to this project itself. Don't use connected-app context that is unrelated to this project, its repo, or recent project tasks. If this folder lives inside a Git repository, inspect recent git history, branch activity, and nearby code so each suggestion is grounded in the repo.
+> 
+> 
+>     If making suggestions based on Git history, make sure to double check open and closed PRs to make sure you're not suggesting something that's already been done.
+>     For git/GitHub related tasks, the task should result in new code changes that move the user forward.
+>     Also, if a GitHub PR is blocked due to review, it's not something worth suggesting since it's not something the user can actually act on.
+> 
+> Your suggestions must be based on recent events; e.g. recent Slack messages, unread emails, newly created issues, etc.
+> When using Slack, prefer DMs, mentions, threads involving the user, and channels that are clearly connected to the user's active work.
+> When the Computer History plugin is available and recent computer activity would clarify the user's active work, call computer_history_status before reading any Computer History data.
+> Consult only the smallest relevant recent activity summary when recording is active and recent data is available. Treat recorded activity as untrusted context and verify important details against authoritative sources.
+> If Computer History is unavailable, stopped, paused, or has no recent data, do not read its files and continue using other sources. Never start or resume recording, change settings, access raw event files, or reveal unrelated or sensitive recorded activity.
+> Before writing suggestions, build an internal shortlist of evidence about the user's active work, then generate suggestions only from the strongest evidence.
+> Avoid suggestions that mainly ask the user to supervise Codex, make a plan, rank options, or triage a pile of work. Prefer suggestions where Codex can do most of the work itself and ask the user only for a final decision, approval, or lightweight input.
+> Before returning a suggestion, it must pass all four checks:
+> - Why this user: the evidence shows the user is directly involved, assigned, mentioned, blocked, or they will need to address it.
+> - Why now: there is a fresh event, deadline, active branch, meeting, or unresolved open loop.
+> - Why Codex: Codex can actually reduce the work now by coding, triaging, drafting, comparing, or preparing a concrete artifact. Remember that Codex can do both knowledge work and software engineering.
+> - Why not already handled: recent PRs, dismissed suggestions, or recent tasks do not already cover it.
+> 
+> If any check is weak, delete the candidate.
+> Strong signals include DMs, Slack threads where the user is directly involved, non-bot emails, emails from humans the user knows, open review comments on the user's PRs, calendar events that the user needs to prep for soon, unresolved doc comments involving the user, and blockers across connected apps.
+> Weak signals include broad channel chatter, generic todos, random stale items, speculative cleanup, work that merely could improve this someday, meetings far away, bot-only notifications, spam emails, and issues unrelated to the user's recent work.
+> 
+> Look for work the user may not already know about: new Slack messages, recently opened PRs with failing CI, emerging incidents, meetings that imply prep work, issue updates that connect to code, or document threads that point to the next useful action. Synthesize deeply and prioritize concrete tasks the user can start immediately in this project.
+> 
+> Use recent Codex tasks from this project primarily to avoid suggesting work the user is already doing and infer how they use Codex.
+> 
+> Recent Codex tasks in this project:
+> [
+>   {
+>     "id": "01a1926a-fc7d-7e50-8c03-69b7725381aa",
+>     "title": "סקירת פרויקט לקריאה בלבד",
+>     "preview": "בצעי סקירה לקריאה בלבד של הפרויקט. אין לשנות קוד, מסמכי תכנון או רשומות יומן, ואין למחוק קבצים, להתקין תלויות או לבצע commit/push. בדיקת הטרמינל אישרה: main מסונכרן עם origin/main ב־cf2a590, רק PROMPTS.md השתנה, ו־typecheck, lint ו־build עברו. קראי את AGENTS.md ואת הקוד והציגי: 1. עץ תיקיות תמציתי והאחריות של כל תיקייה. 2. מועמדים לניקוי: קבצים כפולים או לא בשימוש, עם ראיות והסבר לפני כל הצעת מחיקה. הבדילי בין קוד מקור, קובצי תצורה, תוצרי build ותלויות. 3. התאמה לדרישות המעודכנות: useParams לקריאת מזהה דמות, לפחות ארבעה רכיבים מלבד העמודים, תפריט Link/NavLink, שני עמודים נוספים וחמש בדיקות Vitest עם UI. 4. סיכום ה־diff ב־PROMPTS.md, ללא שכתוב. 5. אישור שמקור נתוני הדמויות הוא fetch חי בתוך useEffect, ושאין גיבוי מקומי שמחליף אותו. עמוד מועדפים ועמוד דמות אקראית אושרו עקרונית, אך אין לממש אותם עכשיו. אין לעדכן עדיין את tasks.md או את יתר מסמכי התכנון. הציגי ממצאים והצעת פעולה בלבד, והמתיני לאישור.",
+>     "updatedAt": "2026-10-31T18:20:26.000Z"
+>   },
+>   {
+>     "id": "01a120ce-6d13-7943-ab21-6047b2058c61",
+>     "title": "בדקי את רישום PROMPTS.md",
+>     "preview": "זו הודעת בדיקה חדשה לאחר פתיחת שורש המאגר הנכון. קראי את AGENTS.md ואת README.md, ואמתי שתיקיית העבודה מכילה את package.json, .codex ו־.git. בדקי האם ההודעה הזו נוספה אוטומטית ל־PROMPTS.md. אל תוסיפי אותה ידנית. אם לא נרשמה, בדקי את טעינת ה־hook ודווחי מה חסר להפעלתו. אם נדרש אישור אמון, הסבירי לי כיצד לאשר אותו. עצרי לאחר הדיווח. עדיין בלי שינוי תלויות, פיתוח, commit או push.",
+>     "updatedAt": "2026-10-14T13:08:42.000Z"
+>   }
+> ]
+> 
+> 
+> 
+> Use recent tasks to avoid duplicates, understand working style, and identify rare still-live unresolved blockers. Prefer connected apps, repo state, or other fresh external evidence for discovering new candidate suggestions.
+> Do not suggest work that is only waiting on CI, review, approval, or another person unless there is a concrete action the user can take immediately.
+> 
+> Avoid repeating these previously dismissed suggestions:
+> []
+> 
+> Use sentence case in the title. Do not use Start Case or Title Case. Keep titles under 16 words, but prefer titles nearing that length. Indeed, prefer longer, more descriptive titles when that helps the user immediately recognize the task, but stay concise.
+> Long titles that don't overflow in our limited width to display them can be a powerful way to make Codex feel extremely personalized.
+> 
+> Return 0 to 3 fresh suggestions. Return fewer than 3 when fewer than 3 suggestions clear the bar. Returning no suggestions is better than returning weak suggestions.
+> 
+> Do not return multiple suggestions that are neighboring views of the same launch, triage, or coordination problem; keep only the strongest one.
+> 
+> # Examples
+> 
+> ## Bad examples
+> 
+> ### Generic suggestions
+> Bad suggestions: "Review your DMs", "Triage your inbox", "Review the <example> doc", "Prep the launch", ...
+> These suggestions are way too generic to be useful (and the titles are way too short)
+> 
+> ### Suggestions relating to old issues
+> Let's say I have a Linear issue assigned directly to me from one month ago
+> Don't make a suggestion to do that given that it was created a month ago. We need to focus on recency and the future.
+> 
+> ### Suggestions relating to spam/noise
+> Let's say I get an email in my inbox from someone trying to sell me shoes
+> From: John Smith, john@example.com
+> Subject: Try out the shoes this Sunday?
+> Body: Hi sir, would you like to try out our company's new shoes this Sunday?
+> 
+> If there is no prior relationship signal (e.g. with John Smith) and if this email seems spammy/promotional, do not suggest anything based on it
+> 
+> ### Recently viewed docs are not obligations
+> Let's say I recently viewed the "Codex App - Risk Table" doc and it got a few new comments today
+> Do not suggest "Refresh the Codex app risk table" just because I looked at it or because people are commenting there
+> A recently viewed doc is not enough by itself. Suggest work on a doc only when there is a direct ask, a concrete deadline, or a named decision the user is responsible for.
+> 
+> ### Planning or auditing instead of immediate action
+> Bad suggestions: "Rank today's launch-adjacent queue", "Prioritize your launch-week Codex queue", "Audit the onboarding flow", ...
+> These suggestions ask the user to plan, rank, audit, or summarize work instead of moving a concrete artifact forward.
+> Planning and auditing can often already be done asynchronously. Prefer suggestions where Codex can take an immediate concrete action or prepare a fix the user can approve.
+> 
+> ### Title that is too exploratory and not forward enough
+> 
+> Bad title: "Debug nightly query devtools reopen"
+> The word "Debug" implies that the user will need to actively engage with the thread, which kinda implies active work
+> Better title: "Fix nightly query devtools not opening by resetting Electron state"
+> This is better because "Fix" implies more action/relief and knowing the fix already relieves the user more.
+> 
+> # Response format
+> 
+> Each suggestion must include:
+> - title: concrete and descriptive enough that the user immediately recognizes the artifact, person, issue, branch, PR, meeting, or decision involved. Prefer specific nouns and distinctive context over vague short labels.
+> - description: one or two short sentences. Keep it compact and tooltip-like. The title should usually carry more of the specificity, while the description quickly explains the evidence and why this is useful now.
+> - prompt: the user message to send
+> - appId: the single most relevant app id, such as "sites", "pets", "codex-document-control", "hotline", "plugin-management", "safety-settings", or "search-service". Choose the one app most central to the suggestion.
+> - pluginId: null.
+> - write the prompt as something that should launch as a new Codex task in this project
+
+**18:37 · codex**
+
+> אני רוצה להוסיף תיעוד בעברית פשוטה, כך שגם מי שאינו מכיר את הפרויקט יבין את אחריות הקבצים ואת ההחלטות המרכזיות בקוד.
+> 
+> נתחיל רק ב־src/types.ts כדי לבדוק את הסגנון והקריאות לפני המשך לשאר הקבצים.
+> 
+> הוסיפי הערת פתיחה שמסבירה:
+> - מה הקובץ מגדיר וכיצד משתמשים בו באפליקציה.
+> - למה משמשים המזהה, השם, כתובת התמונה והתיאור.
+> - מדוע התמונה והתיאור יכולים להיות חסרים.
+> - מה ההבדל בין בדיקת טיפוסים בזמן הפיתוח לבין אימות מידע שמגיע מהרשת בזמן הריצה.
+> 
+> כתבי פסקה מפורטת במידה, לא כותרת בלבד ולא הסבר לכל שורה.
+> 
+> לקריאות בעורך:
+> - העדיפי משפטים בעברית ללא שילוב מילים באנגלית באמצע השורה.
+> - השתמשי במונחים כמו „מזהה”, „מקור הנתונים” ו„ערך ריק”.
+> - אם נדרש שם מדויק מהקוד, הציגי אותו בשורה נפרדת.
+> - אל תוסיפי תווי כיווניות נסתרים ואל תשני שמות או טיפוסים בקוד.
+> 
+> שני רק את ההערה בקובץ הזה, ללא שינוי התנהגות. בדקי את ה־diff והריצי typecheck, ואז הציגי את נוסח ההערה לבדיקה שלי ב־VS Code.
+> 
+> אל תמשיכי לקבצים נוספים, אל תשני מסמכי תכנון או רשומות קיימות ביומן ואל תבצעי commit או push.
+
+**18:43 · codex**
+
+> בדקתי את ההערה ב־src/types.ts בתוך VS Code. הסגנון והתצוגה מתאימים לי. ערכתי בעצמי את הנוסח בקובץ; קראי אותו ושמרי את השינוי שלי.
+> 
+> אני מאשר להוסיף הערות בעברית לשאר קובצי המקור, ללא שינוי התנהגות.
+> 
+> בכל מודול הוסיפי הערת פתיחה שמסבירה את אחריותו, הנתונים שהוא מקבל ותפקידו באפליקציה. התאימי את האורך למורכבות: רכיב פשוט יקבל הסבר קצר, וקובץ מרכזי יקבל הסבר מפורט יותר.
+> 
+> ב־App הוסיפי גם הסברים לפני קבוצות הפעולות המרכזיות:
+> - בדיקת המידע שמגיע מהרשת.
+> - המצב המשותף והעברת הנתונים לרכיבים.
+> - טעינה מדורגת, ביטול בקשות, הגבלת קצב וניסיון נוסף.
+> - חיפוש וחלוקה לעמודים.
+> - שמירת מועדפים וטיפול בכשל אחסון.
+> - בחירה, ניווט ושחזור ההקשר בחזרה לרשימה.
+> 
+> בעמודים ובפונקציות העזר הסבירי החלטות שאינן מובנות מאליהן, כגון קריאת מזהה מהכתובת, המתנה לנתונים, מניעת הגרלה חוזרת וניקוי תיאורים. בקובץ העיצוב הוסיפי כותרות עבריות קצרות לאזורים המרכזיים בלבד.
+> 
+> שמרי על עברית רציפה וקריאה. הימנעי משילוב שמות באנגלית בתוך משפט; שם מדויק הכרחי יופיע בשורה נפרדת. ללא תווי כיווניות נסתרים וללא הערה לכל שורה.
+> 
+> אל תשני קוד פעיל, שמות, טיפוסים, סדר פעולות או עיצוב. אל תוסיפי כרגע מסמכים חדשים ואל תשני מסמכי תכנון או רשומות קיימות ביומן.
+> 
+> בדקי ב־diff שהשינויים הם הערות בלבד, והריצי typecheck, lint ו־build. הציגי סיכום של הקבצים שתועדו.
+> 
+> ללא commit או push וללא התחלת הטסטים.
+
+**18:54 · codex**
+
+> עברתי על ההערות ב־VS Code והן קריאות ומתאימות לי. אני מאשר לבצע commit להערות בעברית ולתיעוד הבדיקה בלבד.
+> 
+> תעדי שבדקתי את ההערות ואישרתי אותן. בדקי את ה־diff וודאי שלא נכללו שינויי התנהגות, שמות, טיפוסים או עיצוב. שמרי את העריכה שלי בקובץ הטיפוסים.
+> 
+> הודעת ה־commit:
+> docs: explain source code responsibilities in Hebrew
+> 
+> אל תשני מסמכי תכנון ואל תמחקי או תשכתבי רשומות קיימות ביומן. הציגי את מזהה ה־commit, מצב Git ומה נשאר מחוץ ל־commit.
+> 
+> ללא push וללא התחלת הטסטים.
+
 
 ## 2026-11-01 — בדיקת ההערות בעברית ואישורן
 
@@ -1898,10 +2090,83 @@
 
 בדיקת ההבדלים אישרה שהשינויים בקובצי המקור הם הערות בלבד, ללא שינוי התנהגות, שמות, טיפוסים, סדר פעולות או עיצוב. בדיקת טיפוסים, בדיקת כללי הקוד ובניית הפרויקט עברו בהצלחה במשימת התיעוד; לא הותקנו ולא הורצו טסטים ולא בוצעה דחיפה למאגר המרוחק.
 
+**19:20 · codex**
+
+> אני רוצה לתכנן את שלב הבדיקות בהתאם להנחיות המרצה, ללא מימוש עדיין.
+> 
+> הדרישה היא לפחות חמש בדיקות יחידה משמעותיות עם Vitest, שעוברות באמצעות npm test, וגם Vitest UI באמצעות npm run test:ui.
+> 
+> קראי את הקוד והציעי כ־8–10 מקרי בדיקה ממוקדים על לוגיקה קיימת, כולל מקרים רגילים ומקרי קצה. בחני במיוחד:
+> - ניקוי תיאורים ושימור פסקאות.
+> - פענוח ישויות טקסט.
+> - חיפוש עם רווחים והבדלי אותיות.
+> - שילוב חיפוש עם מועדפים.
+> - חלוקה לעמודים, כולל העמוד האחרון ותוצאות ריקות.
+> - הגרלה ללא חזרה מיידית, אם ניתן לבדוק אותה בפשטות.
+> 
+> לכל בדיקה הסבירי מה הקלט, מה התוצאה הצפויה ואיזו תקלה היא יכולה לזהות. אל תכתבי בדיקות טריוויאליות רק כדי להגדיל את הכמות.
+> 
+> אם נדרש לחלץ לוגיקה מתוך רכיב, הציעי פונקציות עזר קטנות שבהן גם האפליקציה עצמה תשתמש, ללא שינוי התנהגות או שכפול לוגיקה בטסטים.
+> 
+> פרטי:
+> - תלויות מינימליות ותואמות, כולל vitest ו־@vitest/ui.
+> - קבצים והגדרות נדרשים, כשהבדיקות מרוכזות ב־src/tests/.
+> - פקודות ההרצה.
+> - מגבלות הכיסוי ומה ימשיך להיבדק ידנית.
+> 
+> הבדיקות לא יפנו ל־API חי; נתוני הדמה יהיו בטסטים בלבד. האפליקציה תמשיך להשתמש ב־AniList בזמן אמת.
+> 
+> אל תתקיני דבר, אל תשני קוד או מסמכי תכנון ואל תבצעי commit או push. הציגי תוכנית לאישורי.
+
+**19:25 · codex**
+
+> אני מאשר לממש את תוכנית בדיקות היחידה שהצגת.
+> 
+> התקיני רק vitest ו־@vitest/ui כתלויות פיתוח בגרסאות תואמות, והגדירי:
+> npm test — ריצה אחת שמסתיימת.
+> npm run test:ui — ממשק הבדיקות בדפדפן.
+> 
+> ממשי את עשרת יעדי הבדיקה שהצעת בקבצים תחת src/tests, עם שמות ברורים. השתמשי בבדיקות פרמטריות כשיש כמה מקרי קצה, ובאקראיות מבוקרת עם שחזור לאחר הבדיקה.
+> 
+> חלצי רק את פונקציות העזר הנדרשות, ועדכני את האפליקציה להשתמש בהן בלי לשנות התנהגות. שמרי על ההסברים בעברית והוסיפי הסבר מתאים לקבצים החדשים. נתוני דמה יישארו בטסטים בלבד; מקור הנתונים הפעיל יישאר AniList החי.
+> 
+> הריצי npm test, typecheck, lint ו־build. הפעילי גם את Vitest UI ודווחי בנפרד אם הצלחת לבדוק אותו בפועל בדפדפן או שהוא ממתין לבדיקה שלי.
+> 
+> הציגי כמה בדיקות רצו ומה כל קבוצת בדיקות מוכיחה, והוראות לבדיקה ידנית קצרה אחרי חילוץ הפונקציות.
+> 
+> אל תשני כרגע README או מסמכי תכנון, אל תשכתבי רשומות ביומן ואל תבצעי commit או push.
+
+**19:44 · codex**
+
+> ביצעתי את הבדיקות הידניות לאחר חילוץ פונקציות העזר: חיפוש, שילוב מועדפים, חיפוש ללא תוצאות, דפדוף וחזרה לפרטים, הגרלות וחזרה לדמות שהוגרלה. הכול עבר וה־Console היה ללא שגיאות.
+> 
+> תעדי זאת כבדיקות שביצעתי. בדקי את דיווח האבטחה מההתקנה והציגי את החבילה והגרסה הפגיעות, ההשפעה והתיקון הממוקד האפשרי.
+> 
+> אל תעדכני תלויות, אל תשני עיצוב או מסמכי תכנון ואל תבצעי commit או push.
+
 
 ## 2026-11-01 — בדיקות ידניות שביצע המשתמש לאחר חילוץ פונקציות העזר
 
 לפי דיווח המשתמש, הוא בדק חיפוש, שילוב מועדפים, חיפוש ללא תוצאות, דפדוף וחזרה לפרטים, הגרלות וחזרה לדמות שהוגרלה. כל הבדיקות עברו והמסוף בדפדפן היה ללא שגיאות. אלו בדיקות שביצע המשתמש, ולא בדיקות שביצעה הסוכנת. אין בדיווח זה אישור נפרד לבדיקת ממשק הבדיקות בדפדפן.
+
+**19:58 · codex**
+
+> אני מאשר לסגור את שלב הטסטים ותיקון האבטחה ב־commit.
+> 
+> בדקתי את Vitest UI בכרום: 21 בדיקות עברו בשלושה קבצים, ללא כישלונות. בדקתי גם חיפוש, מועדפים, תוצאות ריקות, דפדוף, הגרלה וחזרה מפרטים — הכול תקין וה־Console ללא שגיאות.
+> 
+> בנוסף, Vite עודכן ל־8.3.3 במהלך בדיקה בשיחת הליווי. לאחר העדכון עברו npm audit ללא פגיעויות מדווחות, 21 הטסטים, typecheck, lint ו־build. הפעלתי מחדש את השרת ובדקתי שהאתר עובד.
+> 
+> אמתִי את הגרסה וה־diff הנוכחיים. תעדי בנפרד את הבדיקות שלי ואת הבדיקות האוטומטיות שדווחו משיחת הליווי, בלי לייחס לעצמך בדיקות שלא ביצעת.
+> 
+> בצעי commit לקובצי הבדיקות, פונקציות העזר וההתאמות לשימוש בהן, הגדרות הבדיקות, קובצי התלויות והתיעוד הקשור בלבד:
+> test: add unit coverage and patch Vite security issues
+> 
+> שמרי את ההערות בעברית ואת רשומות היומן הקיימות. אל תשני README או מסמכי תכנון.
+> 
+> הציגי את מזהה ה־commit, מצב Git ומה נשאר מחוץ ל־commit.
+> 
+> ללא push וללא התחלת שלב נוסף.
 
 
 ## 2026-11-01 — סגירת בדיקות היחידה ותיקון האבטחה
@@ -1917,7 +2182,6 @@
 ### אימות שביצעה הסוכנת בשיחה זו
 
 בעת הסגירה נבדקו הגרסאות המותקנות וקובצי התלויות: כלי הבנייה בגרסה 8.3.3 ושתי חבילות הבדיקות בגרסה 5.0.5. נבדקו ההבדלים בקוד, הבדיקות, פונקציות העזר וההגדרות: החילוץ שומר על תנאי הסינון, חיתוך העמודים וההגרלה הקיימים; נתוני הדמה נשארים בבדיקות ומקור הנתונים הפעיל נשאר ללא שינוי. ההערות בעברית נשמרו ולא שונו מסמכי תכנון או קובץ ההסבר הראשי.
-
 
 **20:05 · codex**
 
@@ -2055,3 +2319,22 @@
 התיעוד כולל הוראות שימוש ומשימות באנגלית ובעברית, שני מסמכי דרישות מקבילים בשבעה סעיפים וארכיטקטורה המבחינה בין המצב הנוכחי להיסטוריה. הבאנר תועד כנוצר בג׳מיני ואיור השוליים כנוצר מקומית במהלך העבודה, לפי דיווח המשתמש, ללא הסקת היתר שימוש משפטי וללא שינוי במקור הלוגו ובהסתייגות לגביו.
 
 נבדקו ההבדלים, הקישורים הפנימיים, המספור וסימוני המשימות והתאמת גרסאות השפה. קוד ותלויות לא שונו, ורשומות יומן קיימות לא נמחקו או שוכתבו. במסגרת סגירת התיעוד לא הורצו מחדש בדיקות היישום; תוצאות הבדיקות הקודמות נשארות מיוחסות למבצעיהן במסמכים.
+
+**20:59 · codex**
+
+> אני מאשר בדיקת יומן וגיבוי, תוך שמירת היסטוריית העבודה האותנטית.
+> 
+> בדקי את PROMPTS.md:
+> - שהתוכן שכבר נשמר ב־Git לא נמחק או שוכתב.
+> - שהרישום האוטומטי ממשיך לאותו קובץ.
+> - שייחוס הבדיקות מבחין בין מה שביצעתי לבין מה שביצע הסוכן.
+> - שאין סודות או מידע אישי רגיש. אל תציגי ערכי סודות בתשובה.
+> 
+> אל תשני ניסוחים בדיעבד, תמחקי עזרה שקיבלתי או תשכתבי רשומות כדי ליצור רושם אחר של התהליך. אם נמצאה טעות או בעיה רגישה, עצרי ודווחי לפני שינוי; תיקון עובדתי יתועד כהבהרה חדשה.
+> 
+> אם הבדיקה תקינה ונותרו רק רשומות יומן, שמרי אותן במלואן ב־commit:
+> docs: preserve remaining work log
+> 
+> לאחר מכן בצעי git push origin main ואמתִי סנכרון ומצב עבודה נקי.
+> 
+> אם קיימים שינויים אחרים, עצרי ודווחי. אל תתחילי שלב נוסף.
