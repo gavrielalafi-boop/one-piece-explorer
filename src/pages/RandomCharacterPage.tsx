@@ -4,6 +4,7 @@
  * והתוצאה נשמרת במצב המשותף כדי שתישאר זמינה גם לאחר מעבר לעמוד אחר.
  */
 import CharacterCard from '../components/CharacterCard'
+import { drawCharacterId } from '../utils/randomCharacter'
 import type { Character } from '../types'
 
 type RandomCharacterPageProps = {
@@ -25,12 +26,9 @@ export default function RandomCharacterPage({ characters, status, randomCharacte
    * אם זמינה רק דמות אחת היא נשארת מועמדת; אוסף ריק אינו מפיק תוצאה.
    */
   function drawCharacter() {
-    const candidates = characters.length > 1
-      ? characters.filter((item) => item.id !== randomCharacterId)
-      : characters
-    if (candidates.length === 0) return
-    const index = Math.floor(Math.random() * candidates.length)
-    onRandomCharacterChange(candidates[index].id)
+    const id = drawCharacterId(characters, randomCharacterId)
+    if (id === null) return
+    onRandomCharacterChange(id)
   }
 
   return (

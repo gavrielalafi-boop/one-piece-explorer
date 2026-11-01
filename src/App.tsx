@@ -17,6 +17,7 @@ import Pagination from './components/Pagination'
 import Header from './components/Header'
 import Footer from './components/Footer'
 import { decodeCharacterText } from './utils/characterDescription'
+import { filterCharacters, getPageCount, getPageCharacters } from './utils/characterCollection'
 import type { Character } from './types'
 
 const favoritesStorageKey = 'one-piece-explorer:favorites'
@@ -137,11 +138,9 @@ export default function App() {
    * החיפוש מתעלם מהבדלי אותיות גדולות ורווחים בקצוות ומצטרף לסינון המועדפים.
    * החלוקה לעמודים מתבצעת רק על התוצאות שכבר נטענו, בקבוצות של עשרים וחמש דמויות.
    */
-  const normalizedQuery = searchQuery.trim().toLowerCase()
-  const filteredCharacters = characters.filter((character) =>
-    character.name.toLowerCase().includes(normalizedQuery) && (!favoritesOnly || favoriteIds.includes(character.id)))
-  const pageCount = Math.ceil(filteredCharacters.length / 25)
-  const visibleCharacters = page ? filteredCharacters.slice((page - 1) * 25, page * 25) : []
+  const filteredCharacters = filterCharacters(characters, searchQuery, favoriteIds, favoritesOnly)
+  const pageCount = getPageCount(filteredCharacters.length)
+  const visibleCharacters = getPageCharacters(filteredCharacters, page)
   const outsidePage = page !== null && page > Math.max(1, pageCount)
 
   useEffect(() => {
@@ -261,8 +260,8 @@ export default function App() {
     const nextIds = favoriteIds.includes(id) ? favoriteIds.filter((favoriteId) => favoriteId !== id) : [...favoriteIds, id]
     setFavoriteIds(nextIds)
     if (isHome && favoritesOnly && page) {
-      const remaining = characters.filter((character) => nextIds.includes(character.id) && character.name.toLowerCase().includes(normalizedQuery))
-      const lastPage = Math.max(1, Math.ceil(remaining.length / 25))
+      const remaining = filterCharacters(characters, searchQuery, nextIds, true)
+      const lastPage = Math.max(1, getPageCount(remaining.length))
       if (page > lastPage) changePage(lastPage, true)
     }
     try {
