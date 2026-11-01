@@ -15,8 +15,8 @@ export default function Pagination({ count, page, onPageChange }: PaginationProp
     <nav className="pagination" aria-label="עמודי דמויות">
       {Array.from({ length: getPageCount(count) }, (_, index) => {
         const number = index + 1
-        return <button type="button" key={number} dir="ltr" aria-current={page === number ? 'page' : undefined}
-          onClick={() => onPageChange(number)}><span dir="ltr">{index * 25 + 1}</span> עד <span dir="ltr">{Math.min(number * 25, count)}</span></button>
+        return <button type="button" key={number} dir="rtl" aria-current={page === number ? 'page' : undefined}
+          onClick={() => onPageChange(number)}><bdi dir="ltr">{index * 25 + 1}</bdi> עד <bdi dir="ltr">{Math.min(number * 25, count)}</bdi></button>
       })}
     </nav>
   )
