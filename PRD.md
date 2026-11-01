@@ -1,37 +1,44 @@
 # PRD — One Piece Explorer
 
+Current requirements, updated 2026-11-01 using the lecturer instructions supplied by the user. [Hebrew translation](PRD.he.md); [implementation and decision history](ARCHITECTURE.md); [historical tasks and current status](tasks.md).
+
 ## 1. Pitch
-A Hebrew RTL app for exploring a selected collection of up to 150 One Piece characters from AniList. Display: “גלו אוסף נבחר של עד 150 דמויות מעולם One Piece.”
+
+A Hebrew RTL application for exploring a selected collection of up to 150 One Piece characters from live AniList data, with English names and descriptions that may contain spoilers.
 
 ## 2. Who it is for
-Fans who want to discover characters and read their English descriptions, which may contain spoilers. This is a selected collection, not a complete franchise catalogue or the developer's personal favorites.
+
+Fans who want to find characters, read details, save favorites and discover a random character. The bounded collection is not a complete franchise catalogue.
 
 ## 3. Screens
-- List: heading and search, then LTR range buttons (1–25, 26–50, etc.) based on currently filtered records, then only the selected page's cards. At most 25 cards per UI page; page changes preserve the heading/search. List URLs use /?page=2; / means page 1.
-- Details at /characters/:id: name, image and full safe description near the top, with return restoring search, favorites filter and list page. Support direct entry, refresh and Back/Forward.
+
+- List: `/` or `/?page=2`; search and favorites filtering, RTL range controls and up to 25 cards per list page.
+- Details: `/characters/:id`; name, image and full cleaned description, direct-link support and return to the origin and saved list context.
+- Favorites: `/favorites`; all saved favorites whose records are loaded, with unavailable-record feedback; no pagination here.
+- Random: `/random`; draw from loaded records, exclude the previous result when alternatives exist and preserve the result across details and return.
+
+The menu links to list, favorites and random; details open by selection or a direct URL.
 
 ## 4. Must-have features
-1. Fetch full character records from media 21 using async/await in useEffect, sequentially loading up to six API pages of 25; stop early when hasNextPage is false. Append to a single characters array in App state and display the first 25 immediately.
-2. Show progressive loaded count and a partial-collection notice while loading. If a request fails, retain successful records and retry the failed page. No separate index/cache or static JSON source/fallback.
-3. Search all loaded name.full values with trim and case-insensitive substring matching; combine with favorites-only filtering before slicing into 25-card pages. New search/filter changes start on page 1; clearing search retains the favorites filter.
-4. Keep selectedCharacterId, searchQuery, favoriteIds and favoritesOnly in mounted App, passing data/callbacks through props. Persist only favorite IDs in localStorage; separate favorite buttons never select or navigate.
-5. Keep Hebrew RTL controls, English LTR descriptions, fixed-size images with loading=lazy, accessible keyboard controls and plain CSS. Next design stage: blue One Piece logo without a treasure map, dark colorful background, uniform Flexbox cards with flex-wrap and a fixed footer reading “© 2026 Gavriel Alafi | Design & Development”.
+
+- Basic TypeScript, React Router, `useParams` and Vitest are mandatory, not bonuses. The updated minimum is five meaningful unit tests; unit coverage is implemented. Details and limitations are in [README](README.md).
+- Progressive live loading, loading/error feedback, cancellation, rate-limit handling and retry without discarding prior records. Trimmed case-insensitive name search combined with favorites before list pagination; search/filter changes reset the list page.
+- Shared state/callbacks in the mounted central component; persist favorite IDs in browser storage with failure handling.
+- Plain responsive CSS, Hebrew RTL controls, English LTR source text, accessible controls, local banner/logo/margin artwork and a fixed footer.
+- Public repository submission by **5 November 2026 at 10:00 Israel time** and an individual defense of about seven minutes instead of video. Preparation, public access and submission remain unverified.
 
 ## 5. Acceptance criteria
-- First 25 characters appear without waiting for 150; at most six successful API pages are appended, with unique IDs and progress. Partial data is never called complete; completion means the selected scope is loaded, not the whole source.
-- Range buttons reflect current filtered results; only up to 25 cards appear; Router restores page on Back/Forward. Invalid pages show feedback and normalize safely without duplicate navigation.
-- Search/favorites work across all loaded records and never trigger API calls. Returning from details restores list context. Direct IDs resolve from the same array as loading progresses; missing IDs get outside-selected-collection feedback only after successful completion.
-- HTTP/network/JSON/GraphQL/data failures retain prior records and offer retry from the failed page. Cancellation prevents stale appends; 429 respects Retry-After without parallel or repeated-request loops.
-- Favorites persist across refresh with malformed/unavailable-storage feedback and in-memory use; image failures show placeholders and names/descriptions decode numeric and common named entities into safe plain text without URLs, clickable links or injected HTML. Fixed footer never covers content/focus at narrow widths.
 
-## 6. Not now
-No libraries beyond existing dependencies, separate index/cache, full-source download, additional API/backend/translation, or project JSON data source/fallback. Use basic TypeScript, fetch, async/await, useEffect/useState, props, array operations and React Router. Preserve completed tasks 1–7 as history. Task 8 (Vitest in src/tests/ and submission documentation) waits until the collection expansion and subsequent design are implemented and manually verified. This edit implements neither data changes nor design.
+- Display each successful batch before the selected scope finishes; retain at most 150 unique characters and stop early when no next source page exists.
+- Filter loaded records without new data requests; show up to 25 cards per list page, including a partial last page and empty-results feedback. Range text is RTL with isolated numbers and the first page on the right.
+- Support four screens, valid direct character links and history; reject invalid IDs/pages, wait for pending records and offer a first-page action for invalid/out-of-range pages. Outside-collection feedback requires successful loading completion. Return restores origin and saved list context; favorite actions do not navigate, and the random result survives in-app navigation.
+- Retain records on request failure, offer retry, avoid stale updates, handle missing text/images and render descriptions as plain text with preserved paragraphs.
+- Meet the updated unit-test minimum and distinguish covered logic, manual verification and unperformed integration coverage. Maintain readable responsive presentation and visible keyboard focus.
+
+## 6. Out of scope and history
+
+No backend, database, authentication, extra data API, full-catalogue download, translation service or local character-data fallback. Mock records stay in tests. Previously planned navigation/network integration tests were not implemented and are not a remaining mandatory requirement under the updated unit-test scope. Initial sample data, single-page loading, card facts and removed-asset decisions remain historical in the architecture/tasks documents, not current requirements. No defense study guide is part of this documentation update.
 
 ## 7. Data
-Only https://graphql.anilist.co via direct browser fetch, without a key or GraphQL library. Media ID 21 is the original One Piece TV anime. Request Media.characters(page:1..6, perPage:25, sort:[ROLE,RELEVANCE,ID]), pageInfo.hasNextPage and id/name.full/image.large/description(asHtml:false). Normalize basic Character records and validate/deduplicate IDs before appending. Use loaded lengths and hasNextPage, not total/lastPage, for decisions. Up to six successful GraphQL requests per app mount, plus necessary failed-request retries; navigation/search/favorites add none. Keep records only in App memory; refresh starts fresh live loading. Use source-supplied CDN images lazily. Historical samples remain unused. The previous complete-collection/index proposal is superseded by this bounded scope selected after the user's syllabus review.
 
-## Visual design refinement (2026-10-11) — completed after user review
-The approved current design replaces the previous right-image/left-facts card presentation: cards now contain a top 100×140 image or matching placeholder, an English LTR/center-aligned name below on the same center axis as the image, and a separate favorite button at the bottom. Full cleaned descriptions remain on the character route. A dark black/navy theme uses gold, turquoise and red accents. The list uses Flexbox with flex-wrap: five columns at wide widths, four/three/two as space narrows and one on very small screens; search and favorites precede range buttons. Preserve all state, props, live loading, pagination and routes.
-Header.tsx presents the local blue src/assets/one-piece-logo.png (800×292, preserved aspect ratio, alt="One Piece") above the secondary accessible One Piece Explorer heading on a dark gradient, without a treasure map. Footer.tsx displays the fixed required copyright text. The PNG source and unverified usage permission are documented in README; this is an unofficial educational project, and credit/disclaimers do not grant permission. The old Wikimedia SVG and original treasure-map SVG have been removed after confirming no code references. Local design assets are images/SVG, never character JSON. CSS reserves footer clearance and retains visible keyboard focus, RTL controls, LTR source text, readable details and fixed image dimensions. Stage B is completed following user approval; task 8 remains open.
-
-Presentation refinement: show only short initial loading and 'טוען דמויות נוספות…' during partial loading, errors/retry and match count; remove request/API-page counters and completion announcements from both routes. Remove the search-scope paragraph and its aria-describedby reference. Below the list show 'מוצג אוסף נבחר של עד 150 דמויות.' Range buttons read '1 עד 25', '26 עד 50', etc., with the first range on the right and ascending endpoints. Technical request information stays in development documentation. Header uses the user-requested blue PNG; unverified usage permission is documented in README. No treasure-map asset remains.
+Direct browser `fetch` to [AniList](https://graphql.anilist.co), without a key or GraphQL library: media 21, up to six sequential source pages of 25 sorted ROLE, RELEVANCE, ID. Read id, full name, large image, plain description and next-page flag; validate responses and deduplicate IDs. Records live in memory; refresh reloads live data. Images use source-supplied URLs. The 150-character cap is a project scope choice, not a lecturer numeric requirement.

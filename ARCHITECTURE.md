@@ -1,5 +1,103 @@
 # Architecture — One Piece Explorer
 
+## Current implementation — 2026-11-01
+
+This section describes the current code. The archived text below is preserved unchanged and is superseded where it conflicts with this section. Current requirements are the parallel seven sections in [PRD.md](PRD.md) and [PRD.he.md](PRD.he.md). See [README.md](README.md) for commands, assets, submission and verification attribution; [tasks.md](tasks.md) maps history to 12 work items.
+
+Basic TypeScript, React Router, useParams and Vitest are mandatory under the updated lecturer instructions supplied by the user. The minimum is five meaningful unit tests; 21 are implemented. Plain CSS and browser fetch are used, without a backend, database, authentication, UI library or external state manager.
+
+### Current files and composition
+
+| File | Responsibility |
+|---|---|
+| [main.tsx](src/main.tsx) | Mount StrictMode and BrowserRouter around App; import global CSS. |
+| [App.tsx](src/App.tsx) | Live data, requests, favorites, selection, search/filter, return context, random-result ID and route composition. |
+| [types.ts](src/types.ts) | Character has numeric id, name, nullable imageUrl and description; component props are typed locally. Types do not replace runtime validation. |
+| [CharacterPage.tsx](src/pages/CharacterPage.tsx) | Read id using useParams, validate a positive safe integer and synchronize App selection before showing details. |
+| [FavoritesPage.tsx](src/pages/FavoritesPage.tsx) | Available saved favorites without pagination; pending/failed/unavailable feedback without deleting saved IDs. |
+| [RandomCharacterPage.tsx](src/pages/RandomCharacterPage.tsx) | Display and update the shared random result through the helper. |
+| [components](src/components/) | Header, Navigation, Footer; SearchBar, Pagination; CharacterList, CharacterCard, CharacterImage, CharacterDetails. |
+| [index.css](src/index.css) | All styling, responsive wrapping, RTL range controls, margins and footer clearance. No App.css exists. |
+| [vite-env.d.ts](src/vite-env.d.ts), [tsconfig.json](tsconfig.json) | Asset/environment types and basic TypeScript checks. |
+| [vite.config.js](vite.config.js) | React plugin; Node Vitest environment, include src/tests/**/*.test.ts, globals disabled. |
+| [package.json](package.json), [package-lock.json](package-lock.json) | Actual scripts and lockfile: Vite 8.3.3, Vitest and its UI 5.0.5. |
+
+Component tree:
+
+    StrictMode
+      BrowserRouter
+        App
+          Header
+          Navigation
+          main (shared loading/error/storage feedback and return button)
+            /                 SearchBar -> Pagination -> CharacterList -> CharacterCard
+            /characters/:id   CharacterPage -> CharacterDetails
+            /favorites        FavoritesPage -> CharacterList -> CharacterCard
+            /random           RandomCharacterPage -> CharacterCard
+            *                 unknown-route feedback
+          Footer
+
+CharacterCard and CharacterDetails share CharacterImage. Header has no home link; Navigation supplies three main links. Details open through selection or a direct URL. Feedback lives inside App/pages/components; no StatusMessage module or App.test.tsx exists.
+
+### State, routes and persistence
+
+App stays mounted across routes. It owns characters, searchQuery, favoriteIds, favoritesOnly, selectedCharacterId, status (loading/success/error), error/cooldown/retry state, lastListContext, detailsOrigin and randomCharacterId. The selected character is derived with find; filtered/page arrays are derived through helpers. Props carry data down and callbacks carry actions back.
+
+App reads page from query parameters: absent means 1; only a single digit 1–6 is valid, and duplicate/other values are invalid. Explicit pagination navigates; search/filter resets replace the current history entry with page 1. Invalid or finally out-of-range pages show an action to return to page 1 rather than redirecting automatically. Valid pages awaiting results remain pending while loading or after failure. Favorites do not paginate.
+
+CharacterPage reads id with useParams and calls the supplied selection callback in an effect. App clears selection outside character routes. No effect navigates in response to selection state. A valid direct ID can wait for a later batch; outside-collection feedback requires successful completion. Global request errors/retry remain visible on failure. Heading focus and scrolling follow route/selection changes, not list query changes.
+
+Selection saves list search/filter/page when entered from the list and records favorites/random as origin when applicable. Return restores that context or origin; a fresh direct entry defaults to the list. The random result survives these transitions. Search/filter are not serialized in URLs; refresh resets them while the page comes from the URL.
+
+Only favorite IDs persist under one-piece-explorer:favorites. JSON and positive safe integer IDs are validated and deduplicated. Storage failure leaves in-memory use available with feedback. Removing a favorite can correct the last filtered page. Selection/search/favorites/navigation do not initiate extra data requests.
+
+### Live data and text
+
+App POSTs GraphQL directly to https://graphql.anilist.co using browser fetch. Media 21, perPage 25, sort ROLE/RELEVANCE/ID; fields id, name.full, image.large, description(asHtml:false), pageInfo.hasNextPage. Up to six sequential source pages yield at most 150 unique records; stop early when there is no next page. Each batch displays when received. Subsequent requests wait three seconds after the preceding batch completes. Refresh reloads live data; there is no sample JSON source/fallback.
+
+Local helpers in App validate unknown values, HTTP/JSON/GraphQL errors, response shape, identifiers and optional text before append. Blank/missing optional text becomes null; non-HTTPS image URLs become null. Appending deduplicates already-loaded IDs and enforces the cap. Failure retains prior records and the failed page for manual retry. HTTP 429 reads Retry-After as seconds/date with a 60-second fallback and minimum three-second cooldown. Cleanup clears timers, aborts and blocks stale updates. UI shows loading text, match count and partial-error feedback, without technical request counters.
+
+| Helper module | Exported functions and production use |
+|---|---|
+| [characterDescription.ts](src/utils/characterDescription.ts) | decodeCharacterText handles common/numeric entities, preserving unknown/invalid values; App decodes names. cleanCharacterDescription handles nullable text, link labels, URLs, formatting/spoiler delimiters and paragraphs; CharacterDetails renders the output as React text. |
+| [characterCollection.ts](src/utils/characterCollection.ts) | filterCharacters applies trimmed case-insensitive substring search and optional favorites; getPageCount groups by 25; getPageCharacters slices a page or returns empty for null. App uses all three; Pagination uses the count. Favorite-page correction reuses filter/count. |
+| [randomCharacter.ts](src/utils/randomCharacter.ts) | drawCharacterId excludes the previous ID when alternatives exist, returns null for empty input and picks an index using Math.random. RandomCharacterPage calls it; a singleton may repeat. |
+
+Small basic TypeScript helpers are shared by app and tests, with no duplicated test implementation. Cleanup is targeted formatting cleanup, not a complete Markdown parser or HTML sanitizer; rendering text prevents markup execution. CharacterImage lazily loads images with missing/broken feedback; callers key it by URL to reset failure state.
+
+### Presentation and Hebrew documentation
+
+Current assets: src/assets/one-piece-logo.png (logo), src/assets/hero-background.webp (banner), src/assets/map-margin.svg (repeating nautical decoration, hidden up to viewport width 620px). Header imports the first two; CSS references the third. [README.md](README.md) preserves the logo source/unverified permission. The user confirmed that the banner was generated in Gemini and the margin illustration was created locally during project work; these origins are recorded in both README versions and do not establish legal usage permission. Historical no-map/logo-only claims are superseded.
+
+Main is centered with no opaque background; search and cards keep dark surfaces. Its width follows capped card rows. Card max-width is 210px and image area height 180px; images fill the area with object-fit:cover. Details images are 150×210px. Fixed footer: “© 2026 Gavriel Alafi | Design & Development”. Hebrew controls are RTL, English source text LTR. Range buttons are RTL with bdi-isolated unchanged numeric endpoints; first page stays on the right. CSS retains focus outlines, wrapping and footer clearance. Source modules have Hebrew responsibility comments, App explains action groups, and CSS has short area headings.
+
+### Unit tests and limits
+
+| File under src/tests | Cases | Coverage |
+|---|---:|---|
+| [characterDescription.test.ts](src/tests/characterDescription.test.ts) | 10 | Formatting/link cleanup, labels, paragraphs, blank/null descriptions, named/numeric entities and invalid values. |
+| [characterCollection.test.ts](src/tests/characterCollection.test.ts) | 7 | Query normalization, no source mutation, favorites intersection, no results, exact page boundaries and partial last page. |
+| [randomCharacter.test.ts](src/tests/randomCharacter.test.ts) | 4 | Controlled random boundaries excluding prior ID, singleton repeat and empty input without a draw; mocks restored after every case. |
+
+21 cases including parameterized edge cases. Node environment, explicit Vitest imports, no DOM library, no setup file and no network requests; mock records stay in tests. npm test runs once; npm run test:ui starts UI/watch. Commands for typecheck/lint/build/preview and npm ci are in README.
+
+No automatic coverage exists for navigation/component integration, HTTP/GraphQL/response validation, abort/rate-limit/retry integration, persistence failures, image loading or browser layout/accessibility. Former planned integration tests were not implemented, are not claimed complete and are not a remaining mandatory requirement under the updated minimum of five meaningful unit tests. No percentage report exists. Manual verification remains useful; it is not counted among unit cases.
+
+### Verification attribution and remaining work
+
+The agent in this chat ran 21 tests, typecheck, lint and build successfully during implementation and visual fixes; its browser attempts did not complete visual verification. The user separately reported Chrome UI with 21 passing tests in three files, successful search/favorites/empty results/paging/random/return flows and a clean Console, plus approval of margin visibility, readability and RTL ranges. According to the user's companion-chat report, after Vite 8.3.3 audit found no reported vulnerabilities and tests/typecheck/lint/build passed; the user restarted the server and checked the site. This chat verified the version at closure, not a fresh run of companion-chat checks. None of these are new checks during this documentation-only update.
+
+Updated submission instructions supplied by the user: public repository by 5 November 2026 at 10:00 Israel time, individual defense of about seven minutes instead of video. The user approved the seven documentation files and closure of task 11 on 1 November 2026. Review of asset usage permissions, defense preparation, public access verification, submission checks and actual submission remain outstanding. No defense study guide was created.
+
+## Historical planning and decisions — preserved, superseded where noted
+
+The previous architecture follows unchanged. Its planning-only labels, single-source-page limit, old card facts/sizes, LTR controls, no-map claims and future modules/tests are historical, not active specifications. The current section above takes precedence. Integration promises were not fulfilled and are replaced as a mandatory scope by unit testing; the video is replaced by defense.
+
+<details>
+<summary>Previous architecture text</summary>
+
+# Architecture — One Piece Explorer
+
 Planning only. Tasks 1–2 use JavaScript; task 3 explicitly converts existing files to simple TypeScript. Router and Vitest are introduced in tasks 6 and 8. Use plain CSS and built-in fetch; no server, database, UI or state-management libraries.
 
 ## Planned final files and responsibilities
@@ -131,3 +229,31 @@ Component tree: App renders Header, the existing route-dependent main content (S
 
 
 Presentation refinement: show only short initial loading and 'טוען דמויות נוספות…' during partial loading, errors/retry and match count; remove request/API-page counters and completion announcements from both routes. Remove the search-scope paragraph and its aria-describedby reference. Below the list show 'מוצג אוסף נבחר של עד 150 דמויות.' Range buttons read '1 עד 25', '26 עד 50', etc., with the first range on the right and ascending endpoints. Technical request information stays in development documentation. Header uses the user-requested blue PNG; unverified usage permission is documented in README. No treasure-map asset remains.
+
+</details>
+
+## Historical PRD design appendices
+
+Original decision appendices moved here to keep both current PRDs concise and parallel. The current implementation above supersedes their old sizes, asset claims, labels and pending statuses. Prior complete PRD revisions remain in Git history.
+
+<details>
+<summary>Original English decisions</summary>
+
+## Visual design refinement (2026-10-11) — completed after user review
+The approved current design replaces the previous right-image/left-facts card presentation: cards now contain a top 100×140 image or matching placeholder, an English LTR/center-aligned name below on the same center axis as the image, and a separate favorite button at the bottom. Full cleaned descriptions remain on the character route. A dark black/navy theme uses gold, turquoise and red accents. The list uses Flexbox with flex-wrap: five columns at wide widths, four/three/two as space narrows and one on very small screens; search and favorites precede range buttons. Preserve all state, props, live loading, pagination and routes.
+Header.tsx presents the local blue src/assets/one-piece-logo.png (800×292, preserved aspect ratio, alt="One Piece") above the secondary accessible One Piece Explorer heading on a dark gradient, without a treasure map. Footer.tsx displays the fixed required copyright text. The PNG source and unverified usage permission are documented in README; this is an unofficial educational project, and credit/disclaimers do not grant permission. The old Wikimedia SVG and original treasure-map SVG have been removed after confirming no code references. Local design assets are images/SVG, never character JSON. CSS reserves footer clearance and retains visible keyboard focus, RTL controls, LTR source text, readable details and fixed image dimensions. Stage B is completed following user approval; task 8 remains open.
+
+Presentation refinement: show only short initial loading and 'טוען דמויות נוספות…' during partial loading, errors/retry and match count; remove request/API-page counters and completion announcements from both routes. Remove the search-scope paragraph and its aria-describedby reference. Below the list show 'מוצג אוסף נבחר של עד 150 דמויות.' Range buttons read '1 עד 25', '26 עד 50', etc., with the first range on the right and ascending endpoints. Technical request information stays in development documentation. Header uses the user-requested blue PNG; unverified usage permission is documented in README. No treasure-map asset remains.
+
+</details>
+
+<details>
+<summary>Original Hebrew decisions</summary>
+
+## התאמת העיצוב (2026-10-11) — הושלם לאחר בדיקת המשתמש
+העיצוב המאושר מחליף את תצוגת הכרטיס הקודמת של תמונה מימין ופרטים משמאל: בכל כרטיס תמונה או מציין מקום 100×140 למעלה, שם באנגלית ב־LTR וביישור מרכז מתחתיה על אותו ציר מרכזי, וכפתור מועדפים נפרד בתחתית. התיאור המלא והמנוקה נשאר בנתיב הדמות. הרקע שחור־כחול כהה עם הדגשות זהב, טורקיז ואדום. הרשימה משתמשת ב־Flexbox עם flex-wrap: חמש עמודות במסך רחב, ארבע/שלוש/שתיים לפי המקום ועמודה אחת במסך קטן מאוד; חיפוש ומועדפים לפני כפתורי הטווחים. נשמרים כל ה־state, ה־props, הטעינה החיה, הדפדוף והנתיבים.
+Header.tsx מציג לוגו כחול מקומי ב־src/assets/one-piece-logo.png (800×292, יחס ממדים נשמר, alt="One Piece") מעל הכותרת הנגישה והמשנית One Piece Explorer, על רקע כהה ללא מפת אוצר. Footer.tsx מציג את טקסט הזכויות הנדרש בתחתית קבועה. מקור ה־PNG והיעדר היתר שימוש מאומת מתועדים ב־README; זהו פרויקט לימודי לא רשמי וקרדיט או הצהרה אינם היתר. הלוגו הישן מ־Wikimedia ומפת האוצר המקורית הוסרו לאחר אימות שאין הפניות אליהם בקוד. נכסי עיצוב מקומיים הם תמונות או SVG, לעולם לא JSON של דמויות. CSS שומר מרווח לתחתית, focus נראה למקלדת, בקרות RTL, תוכן מקור LTR, פרטים קריאים ותמונות במידות קבועות. סעיף B הושלם לאחר אישור המשתמש; משימה 8 נשארת פתוחה.
+
+התאמת הודעות התצוגה: מוצגות רק הודעת טעינה ראשונית קצרה ו'טוען דמויות נוספות…' בטעינה חלקית, שגיאות/ניסיון נוסף ומספר התאמות; מוני בקשות/עמודי API והודעות סיום אינם מוצגים בשני המסכים. פסקת היקף החיפוש וקישור aria-describedby אליה מוסרים. מתחת לרשימה מופיע 'מוצג אוסף נבחר של עד 150 דמויות.' כפתורי הטווחים הם '1 עד 25', '26 עד 50' וכו׳, העמוד הראשון מימין וערכי הקצוות בסדר עולה. נתוני בקשות טכניים נשארים בתיעוד הפיתוח. הכותרת משתמשת ב־PNG הכחול שביקש המשתמש; היעדר היתר שימוש מאומת מתועד ב־README. נכס מפת האוצר הוסר.
+
+</details>

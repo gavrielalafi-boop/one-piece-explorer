@@ -1,3 +1,51 @@
+# Tasks — current status and historical record
+
+[גרסה בעברית](tasks.he.md)
+
+## Scope clarification — 2026-11-01
+
+This is a current-status overlay for the original eight tasks plus stages A/B, not a rewrite of their history. Updated lecturer instructions supplied by the user require basic TypeScript, React Router, useParams and at least five meaningful Vitest unit tests. The project implements 21 unit cases. See [README.md](README.md) for coverage and attribution of user, agent and companion-chat checks.
+
+**Replaced requirements:** task 8's original navigation/network integration tests were not implemented and are not a remaining mandatory requirement under the approved unit-test scope. They are unperformed coverage, not completed tests. The old video requirement is replaced by an individual defense of about seven minutes. Old waiting-stage, 25-only, LTR-range and logo-only/no-map statements below describe history, not current instructions.
+
+There are **12 work items total**: original tasks 1–8, A/B counted as items 9/10 without changing their historical labels, and items 11/12 below. This status table maps the same work; it does not add another task list.
+
+| Item | Current status |
+|---|---|
+| 1–7 | Completed historical milestones; initial JSON/25-record scope is superseded by the current live application. |
+| 8 | Unit-testing work complete under the updated requirement: 21 tests in three files, UI and security patch accepted. Documentation is tracked in item 11, defense/submission in item 12. The original unchecked box below is an old snapshot, not a current integration/video obligation. |
+| 9 / A | Up to 150 live characters and 25 per list page implemented; historical approval retained. |
+| 10 / B | Design implemented and accepted. Later four-screen navigation, Hebrew comments and nautical margin/RTL fixes are completed refinements, not new task slots. |
+| 11 | Seven-document update reviewed and approved by the user on 1 November 2026; item 11 completed. |
+| 12 | Defense preparation, repository public access verification and submission remain incomplete. |
+
+Current scope: list, character details, favorites and random screens with a three-link menu; live AniList only; up to six source batches and pagination on the list only. Current requirements: [English PRD](PRD.md), [Hebrew PRD](PRD.he.md), [architecture](ARCHITECTURE.md). This update does not invent new verification results.
+
+The synchronized documentation spans seven files because README and tasks each have two language versions. Item 11 applies to all seven files, including counterpart links and content/status/acceptance alignment; this adds no task; item 11 was completed only after the user approved the documents. The English historical text stays unchanged; the Hebrew counterpart faithfully translates that text rather than revising the history.
+
+The seven files covered by item 11 are:
+
+```text
+README.md
+README.he.md
+PRD.md
+PRD.he.md
+ARCHITECTURE.md
+tasks.md
+tasks.he.md
+```
+
+Asset-origin clarification supplied by the user: the banner was generated in Gemini and the margin illustration was created locally during project work. This does not establish legal usage permission; logo source attribution and its existing caveat remain unchanged.
+
+## Remaining work within the 12-item limit
+
+- [x] **11 · Documentation synchronization and review** — Update both README versions, both parallel seven-section PRDs, current architecture and both versions of this historical/current task mapping. Preserve decisions and clarify replacements. Check internal links, paths, commands and translation alignment. **Done when:** the user reviews and approves all seven documents; unresolved evidence/usage-permission gaps remain explicit.
+- [ ] **12 · Defense preparation and submission verification** — Prepare separately for an individual defense of about seven minutes, verify public repository access and actual submission by **5 November 2026 at 10:00 Israel time**. Review asset usage permissions or explicitly document unresolved status before final review. **Done when:** preparation and submission checks are actually performed and recorded with their source. No video is required. No defense study guide is created during item 11.
+
+## Historical task text — preserved unchanged
+
+The original eight tasks and stages A/B follow verbatim, including their then-current status and acceptance wording. Read them with the replacements above; the updated requirements were not retroactively present from the start.
+
 # Tasks — One Piece Explorer
 
 Tasks 1–7 are completed; task 8 remains planned. Task 7 manual verification is recorded separately for the user and agent in PROMPTS.md. Setup is saved in e6b43bd. Work on one task at a time, review the diff, run relevant checks, document only actual checks, then stop and explain the change in three sentences. The user handles commits unless explicitly requested otherwise.
