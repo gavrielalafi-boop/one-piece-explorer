@@ -1,3 +1,4 @@
+/* הגדרות כלליות, צבעים ורקע */
 :root {
   font-family: system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
   line-height: 1.6;
@@ -21,6 +22,7 @@ body {
   background-position: left 150px, right 300px, left top, left top, center top;
   background-repeat: repeat-y, repeat-y, repeat, repeat, no-repeat;
 }
+/* פקדים ומיקוד במקלדת */
 button, input { font: inherit; }
 button { cursor: pointer; }
 button:disabled { cursor: default; opacity: .65; }
@@ -30,6 +32,7 @@ button:hover:not(:disabled) { border-color: var(--gold); background: #19334a; }
 button:focus-visible, input:focus-visible, [tabindex="-1"]:focus-visible {
   outline: 3px solid var(--gold); outline-offset: 4px;
 }
+/* כותרת האתר ותמונות הפתיחה */
 .hero {
   background: radial-gradient(ellipse at center, #102738, #04121f 75%);
   border-bottom: 1px solid var(--gold);
@@ -41,17 +44,20 @@ button:focus-visible, input:focus-visible, [tabindex="-1"]:focus-visible {
 .hero-content { position: absolute; z-index: 1; bottom: 2%; inset-inline: 0; display: flex; flex-direction: column; align-items: center; gap: min(.25vw, 4px); text-align: center; text-shadow: 0 1px 3px #000, 0 0 6px #04121f; }
 .hero-logo { display: block; width: min(17vw, 340px); height: auto; filter: drop-shadow(0 2px 4px #02101f); }
 .hero h1 { margin: 0; font-family: Georgia, 'Times New Roman', serif; letter-spacing: .04em; font-size: clamp(5px, .95vw, 18px); line-height: 1.15; color: #ffe0a0; white-space: nowrap; }
+/* ניווט ראשי */
 .site-navigation { display: flex; flex-wrap: wrap; justify-content: center; gap: .5rem; padding: .2rem 1rem; background: #04121ff2; border-bottom: 1px solid #9d804970; }
 .site-navigation a { color: #f8e5be; padding: .4rem .85rem; border: 1px solid transparent; border-radius: 5px; text-decoration: none; }
 .site-navigation a:hover { border-color: var(--gold); background: #142a3b; }
 .site-navigation a[aria-current="page"] { color: #07111e; background: linear-gradient(#ffe19a, #d3a545); font-weight: 700; }
 .site-navigation a:focus-visible { outline: 3px solid var(--gold); outline-offset: 4px; }
+/* אזור התוכן והודעות */
 .app { max-width: 1200px; margin: auto; padding: .6rem 1rem calc(var(--footer-height) + 1rem + env(safe-area-inset-bottom)); overflow-wrap: anywhere; background: #04121f; }
 .app > h2 { color: var(--gold); margin: 0 0 .4rem; font-size: 1.2rem; line-height: 1.4; }
 .app > p { color: #c4d1de; }
 .list-count { margin: .25rem 0; font-size: .85rem; }
 .collection-note { margin: .6rem 0 0; font-size: .8rem; color: #c4d1de; }
 [role="alert"] { border-right: 3px solid var(--red); background: #311e2a; padding: .75rem 1rem; border-radius: 8px; margin: 1rem 0; }
+/* חיפוש וסינון מועדפים */
 .search-bar { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .75rem; background: var(--panel); padding: .45rem .65rem; border: 1px solid var(--border); border-radius: 8px; }
 .search-bar label { font-weight: 700; font-size: .9rem; }
 .search-controls { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; flex: 1 1 280px; min-width: 0; }
@@ -59,9 +65,11 @@ button:focus-visible, input:focus-visible, [tabindex="-1"]:focus-visible {
 .search-controls button { padding: .4rem .65rem; font-size: .9rem; }
 .favorites-filter { display: flex; align-items: center; gap: .5rem; margin: 0; width: fit-content; min-height: 36px; cursor: pointer; }
 .favorites-filter input { width: 20px; height: 20px; margin: 0; accent-color: var(--teal); }
+/* חלוקה לעמודים */
 .pagination { display: flex; flex-wrap: wrap; gap: .5rem; margin: .25rem 0 .6rem; }
 .pagination button { min-width: 75px; padding: .35rem .7rem; font-size: .9rem; }
 .pagination button[aria-current="page"] { color: #07111e; background: var(--gold); border-color: var(--gold); font-weight: 800; }
+/* רשימת דמויות וכרטיסים */
 .character-list-panel, .character-details-panel { min-width: 0; }
 .character-list { display: flex; flex-wrap: wrap; gap: .75rem; list-style: none; padding: 0; margin: 0; align-items: stretch; }
 .character-list > li { flex: 0 1 calc((100% - 3rem) / 5); max-width: 210px; min-width: 0; display: flex; flex-direction: column; padding: .55rem; background: linear-gradient(160deg, #102738, #04121f); border: 1px solid var(--gold); border-radius: 9px; box-shadow: inset 0 0 0 3px #04121f, 0 5px 16px #0004; }
@@ -75,6 +83,7 @@ button:focus-visible, input:focus-visible, [tabindex="-1"]:focus-visible {
 .character-card-title { display: block; font-family: Georgia, 'Times New Roman', serif; font-size: 1rem; line-height: 1.3; font-weight: 700; color: #fff4dd; }
 .favorite-button { margin-top: .4rem; width: 100%; min-height: 38px; padding: .4rem .3rem; font-size: .85rem; }
 .favorite-button[aria-pressed="true"] { color: var(--gold); border-color: var(--gold); background: #352e20; }
+/* חזרה ופרטי דמות */
 .return-button { margin-bottom: 1rem; color: #07111e; background: var(--teal); border-color: var(--teal); font-weight: 700; }
 .return-button:hover:not(:disabled) { background: #ffe0a0; color: #07111e; }
 .character-details-panel { max-width: 900px; margin: 1.5rem auto 0; background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: clamp(1rem, 3vw, 2rem); }
@@ -82,8 +91,10 @@ button:focus-visible, input:focus-visible, [tabindex="-1"]:focus-visible {
 .character-details-panel [dir="ltr"] { text-align: left; }
 .character-details-panel .character-image { width: 150px; height: 210px; max-width: 100%; margin-bottom: 1.5rem; }
 .character-description { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.85; color: #e0e8ef; }
+/* תחתית קבועה */
 .site-footer { position: fixed; bottom: 0; inset-inline: 0; z-index: 10; height: calc(var(--footer-height) + env(safe-area-inset-bottom)); padding: .3rem 1rem calc(.3rem + env(safe-area-inset-bottom)); display: flex; align-items: center; justify-content: center; background: #07111ef5; border-top: 1px solid var(--border); }
 .site-footer p { margin: 0; text-align: center; font-family: Georgia, 'Times New Roman', serif; font-size: .85rem; color: #e2c48b; overflow-wrap: anywhere; }
+/* התאמה למסכים צרים */
 @media (max-width: 1100px) { .character-list > li { flex-basis: calc((100% - 2.25rem) / 4); } }
 @media (max-width: 850px) { .character-list > li { flex-basis: calc((100% - 1.5rem) / 3); } }
 @media (max-width: 620px) {

@@ -1,3 +1,10 @@
+/*
+ * הרכיב המרכזי טוען את אוסף הדמויות ממקור הנתונים ומנהל את המצב המשותף
+ * לחיפוש, למועדפים, לבחירה ולמעבר בין העמודים. הוא אינו מקבל נתונים מרכיב אב;
+ * המידע שלו מגיע מהרשת, מכתובת העמוד, מאחסון הדפדפן ומפעולות המשתמש.
+ * לאחר בדיקת המידע הוא מעביר לרכיבים את הנתונים ואת הפעולות הדרושות להם,
+ * כך שהאוסף והבחירות נשמרים בזיכרון גם כשעוברים בין מסכי האפליקציה.
+ */
 import { useEffect, useRef, useState } from 'react'
 import { matchPath, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import CharacterPage from './pages/CharacterPage'
@@ -14,6 +21,10 @@ import type { Character } from './types'
 
 const favoritesStorageKey = 'one-piece-explorer:favorites'
 
+/*
+ * קריאת המועדפים בודקת שמדובר ברשימת מזהים תקינים ומסירה כפילויות.
+ * מידע פגום או אחסון חסום מובילים לרשימה ריקה ולהודעה, כדי שהאפליקציה תוכל להמשיך לפעול.
+ */
 function readFavoriteStorage(): { ids: number[]; message: string } {
   try {
     const stored = localStorage.getItem(favoritesStorageKey)
@@ -39,6 +50,11 @@ const query = `query($page: Int!) {
   }
 }`
 
+/*
+ * המידע שמגיע מהרשת נבדק בזמן הריצה לפני המרתו למבנה הדמות הפנימי.
+ * נבדקים מבנה התגובה, שגיאות מקור הנתונים, המזהים והשמות; מידע אופציונלי חסר
+ * מומר לערך ריק, וכתובת תמונה מתקבלת רק כשהיא מתחילה בקידומת מאובטחת.
+ */
 function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
@@ -89,9 +105,17 @@ export default function App() {
   const routeHeading = useRef<HTMLHeadingElement>(null)
   const isHome = pathname === '/'
   const characterRoute = Boolean(matchPath('/characters/:id', pathname))
+  /*
+   * מספר העמוד נקרא מהכתובת לצורך קישורים ישירים וחזרה בהיסטוריה.
+   * ערך חסר מציין את העמוד הראשון; ערך כפול או מחוץ לטווח המותר נחשב לא תקין.
+   */
   const pageValues = new URLSearchParams(search).getAll('page')
   const rawPage = pageValues[0]
   const page = rawPage === undefined ? 1 : /^[1-6]$/.test(rawPage) && pageValues.length === 1 ? Number(rawPage) : null
+  /*
+   * האוסף, מצב הטעינה והבחירות נשמרים כאן כמצב משותף לכל המסכים.
+   * הדמות הנבחרת נגזרת מהמזהה ומהאוסף, והנתונים ופעולות העדכון מועברים לרכיבים בהמשך.
+   */
   const [characters, setCharacters] = useState<Character[]>([])
   const [searchQuery, setSearchQuery] = useState('')
   const [initialFavorites] = useState(readFavoriteStorage)
@@ -109,6 +133,10 @@ export default function App() {
   const [randomCharacterId, setRandomCharacterId] = useState<number | null>(null)
   const selectedCharacter = characters.find((character) => character.id === selectedCharacterId)
   const hasSelectedCharacter = selectedCharacter !== undefined
+  /*
+   * החיפוש מתעלם מהבדלי אותיות גדולות ורווחים בקצוות ומצטרף לסינון המועדפים.
+   * החלוקה לעמודים מתבצעת רק על התוצאות שכבר נטענו, בקבוצות של עשרים וחמש דמויות.
+   */
   const normalizedQuery = searchQuery.trim().toLowerCase()
   const filteredCharacters = characters.filter((character) =>
     character.name.toLowerCase().includes(normalizedQuery) && (!favoritesOnly || favoriteIds.includes(character.id)))
@@ -117,11 +145,17 @@ export default function App() {
   const outsidePage = page !== null && page > Math.max(1, pageCount)
 
   useEffect(() => {
-    // Browser history is external state; synchronization never navigates.
+    // היסטוריית הדפדפן היא מקור מצב חיצוני; הסנכרון מנקה בחירה ללא ניווט נוסף.
     // eslint-disable-next-line react/set-state-in-effect
     if (!characterRoute) setSelectedCharacterId(null)
   }, [characterRoute])
 
+  /*
+   * הטעינה מתקדמת בבקשות עוקבות עד שישה עמודים, תוך הצגת כל מנה מיד עם הגעתה.
+   * השהיה בין העמודים מפחיתה את קצב הבקשות; בהגבלת קצב נשמר מועד לניסיון נוסף.
+   * בכשל נשמרות הדמויות שכבר נטענו והעמוד שנכשל נשאר יעד הניסיון הבא.
+   * בניקוי מבוטלים גם ההמתנה וגם הבקשה, ודגל הפעילות מונע עדכונים מתוצאה שהתיישנה.
+   */
   useEffect(() => {
     if (nextApiPage > 6) return
     const controller = new AbortController()
@@ -163,23 +197,34 @@ export default function App() {
         setStatus('error')
       }
     }
-    // A deferred first request lets StrictMode cleanup cancel before sending it.
+    // דחיית הבקשה הראשונה מאפשרת לניקוי של בדיקות הפיתוח לבטל אותה לפני שליחתה.
     const timer = window.setTimeout(() => { void loadPage() }, nextApiPage === 1 ? 0 : 3000)
     return () => { active = false; window.clearTimeout(timer); controller.abort() }
   }, [nextApiPage, attempt])
 
+  /*
+   * הטיימר משחרר את כפתור הניסיון הנוסף בתום ההמתנה שנקבעה בעקבות הגבלת הקצב.
+   */
   useEffect(() => {
     if (!retryAt) return
     const timer = window.setTimeout(() => setRetryAt(0), Math.max(0, retryAt - Date.now()))
     return () => window.clearTimeout(timer)
   }, [retryAt])
 
+  /*
+   * לאחר מעבר או הגעת פרטי הבחירה, המיקוד והגלילה עוברים לראש התוכן המתאים
+   * כדי להקל על התמצאות ועל שימוש במקלדת.
+   */
   useEffect(() => {
     const heading = document.getElementById('character-details-heading') ?? routeHeading.current
     heading?.focus({ preventScroll: true })
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
   }, [pathname, selectedCharacterId, hasSelectedCharacter])
 
+  /*
+   * שינוי חיפוש או מסנן מחזיר לעמוד הראשון ומחליף את כתובת ההיסטוריה הנוכחית.
+   * כך לא נשארים בעמוד שכבר אינו מתאים לתוצאות, ולא נוסף מעבר מיותר להיסטוריה.
+   */
   function changePage(number: number, replace = false) {
     const target = `/?page=${number}`
     if (`${pathname}${search}` !== target) navigate(target, { replace })
@@ -195,6 +240,10 @@ export default function App() {
     changePage(1, true)
   }
 
+  /*
+   * לפני פתיחת דמות נשמרים מסך המקור והקשר הרשימה: חיפוש, מסנן ועמוד.
+   * הבחירה מתעדכנת לפי המזהה, וניווט מתבצע רק כשהכתובת המבוקשת שונה מהנוכחית.
+   */
   function selectCharacter(id: number) {
     setDetailsOrigin(pathname === '/favorites' || pathname === '/random' ? pathname : '/')
     if (isHome) setLastListContext({ searchQuery, favoritesOnly, page: page ?? 1 })
@@ -203,6 +252,11 @@ export default function App() {
     if (pathname !== target) navigate(target)
   }
 
+  /*
+   * המועדפים מתעדכנים תחילה בזיכרון ולאחר מכן נשמרים באחסון הדפדפן.
+   * כשל שמירה מציג הודעה בלי לבטל את השינוי; הסרה מתוך רשימה מסוננת מתקנת
+   * את מספר העמוד אם העמוד האחרון התרוקן.
+   */
   function toggleFavorite(id: number) {
     const nextIds = favoriteIds.includes(id) ? favoriteIds.filter((favoriteId) => favoriteId !== id) : [...favoriteIds, id]
     setFavoriteIds(nextIds)
@@ -219,6 +273,10 @@ export default function App() {
     }
   }
 
+  /*
+   * החזרה מעמוד פרטים מכבדת את מסך המקור; בחזרה לרשימה משוחזרים החיפוש,
+   * סינון המועדפים והעמוד שנשמרו לפני פתיחת הדמות.
+   */
   function returnToList() {
     setSelectedCharacterId(null)
     if (characterRoute && (detailsOrigin === '/favorites' || detailsOrigin === '/random')) {
@@ -230,6 +288,10 @@ export default function App() {
     changePage(lastListContext.page)
   }
 
+  /*
+   * ניסיון נוסף מותר רק לאחר תום הגבלת הקצב. שינוי מונה הניסיונות מפעיל מחדש
+   * את טעינת העמוד שנכשל, בלי למחוק את האוסף שכבר התקבל.
+   */
   function retryLoading() {
     if (retryAt > Date.now()) return
     setStatus('loading')
@@ -237,6 +299,10 @@ export default function App() {
     setAttempt((value) => value + 1)
   }
 
+  /*
+   * המסכים מקבלים את החלק הנחוץ להם מהמצב המשותף ואת הפעולות לעדכונו.
+   * עמוד שעדיין אינו זמין באוסף חלקי מוצג כממתין, ולא נפסל לפני השלמת הטעינה.
+   */
   return (
     <>
     <Header />

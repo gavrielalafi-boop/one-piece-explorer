@@ -1,3 +1,8 @@
+/*
+ * עמוד הפרטים מקבל את הדמות שנבחרה, מזהה הבחירה, מצב הטעינה ופעולה לעדכון הבחירה.
+ * הוא קורא גם את המזהה מכתובת העמוד, כדי לתמוך בקישור ישיר ובהיסטוריית הדפדפן,
+ * ומתאם בין הכתובת לבין המצב המשותף לפני הצגת פרטי הדמות.
+ */
 import { useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import CharacterDetails from '../components/CharacterDetails'
@@ -12,13 +17,20 @@ type CharacterPageProps = {
 
 export default function CharacterPage({ character, selectedCharacterId, onSelectionChange, status }: CharacterPageProps) {
   const { id } = useParams()
+  /*
+   * המזהה חייב להיות מספר שלם חיובי ובטווח שניתן לייצג במדויק, לפני השימוש בו לבחירה.
+   */
   const routeId = id && /^[1-9]\d*$/.test(id) && Number.isSafeInteger(Number(id)) ? Number(id) : null
 
   useEffect(() => {
-    // Synchronize App's selection with direct links and browser history.
+    // מסנכרנים את הבחירה המשותפת גם בכניסה מקישור ישיר ובמעבר בהיסטוריית הדפדפן.
     onSelectionChange(routeId)
   }, [routeId, onSelectionChange])
 
+  /*
+   * ממתינים לסנכרון הבחירה ולנתונים; רק לאחר השלמת הטעינה אפשר לקבוע
+   * שמזהה תקין אינו שייך לאוסף הנבחר.
+   */
   if (routeId === null) return <p role="alert">מזהה הדמות אינו תקין.</p>
   if (selectedCharacterId !== routeId) return <p role="status">טוען את הבחירה...</p>
   if (character) return (

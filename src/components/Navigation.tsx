@@ -1,3 +1,7 @@
+/*
+ * סרגל הניווט מציג קישורים לרשימה, למועדפים ולהגרלה ואינו מקבל נתונים מרכיב אחר.
+ * הוא נעזר בכתובת הנוכחית כדי לסמן את הקישור הפעיל.
+ */
 import { NavLink } from 'react-router-dom'
 
 export default function Navigation() {

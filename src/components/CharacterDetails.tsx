@@ -1,3 +1,8 @@
+/*
+ * הרכיב מקבל דמות ומציג את שמה, תמונתה והתיאור לאחר ניקויו, או הודעה כשאין מידע.
+ * התיאור מוצג כטקסט רגיל בפסקאות, ללא הפעלת תגיות ממקור הנתונים; כיוון הקריאה
+ * של טקסט המקור נפרד מכיוון ההודעות בעברית.
+ */
 import CharacterImage from './CharacterImage'
 import { cleanCharacterDescription } from '../utils/characterDescription'
 import type { Character } from '../types'

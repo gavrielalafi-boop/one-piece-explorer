@@ -1,3 +1,7 @@
+/*
+ * הרכיב מקבל כתובת תמונה ושם לצורך תיאור חלופי, וטוען את התמונה לפי הצורך.
+ * מצב כשל מקומי מאפשר להציג הודעה גם כשהכתובת קיימת אך טעינת התמונה נכשלת.
+ */
 import { useState } from 'react'
 
 type CharacterImageProps = { imageUrl: string | null; name: string }

@@ -1,3 +1,7 @@
+/*
+ * כותרת האתר מציגה תמונות מקומיות ואת שם האפליקציה ואינה מקבלת נתונים מרכיב אחר.
+ * תמונת הרקע דקורטיבית ולכן התיאור החלופי שלה ריק; לסמל יש תיאור שמזהה אותו.
+ */
 import onePieceLogo from '../assets/one-piece-logo.png'
 import heroBackground from '../assets/hero-background.webp'
 

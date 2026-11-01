@@ -1,3 +1,8 @@
+/*
+ * עמוד ההגרלה מקבל את האוסף הזמין, מצב הטעינה, מזהה ההגרלה הקודמת ופעולות
+ * לעדכון ההגרלה, לבחירה ולמועדפים. ההגרלה נעשית רק מתוך הדמויות שכבר נטענו,
+ * והתוצאה נשמרת במצב המשותף כדי שתישאר זמינה גם לאחר מעבר לעמוד אחר.
+ */
 import CharacterCard from '../components/CharacterCard'
 import type { Character } from '../types'
 
@@ -15,6 +20,10 @@ type RandomCharacterPageProps = {
 export default function RandomCharacterPage({ characters, status, randomCharacterId, onRandomCharacterChange, selectedCharacterId, favoriteIds, onSelect, onToggleFavorite }: RandomCharacterPageProps) {
   const character = characters.find((item) => item.id === randomCharacterId)
 
+  /*
+   * כשיש יותר מדמות אחת מוציאים את התוצאה הקודמת מהמועמדות כדי למנוע חזרה מידית.
+   * אם זמינה רק דמות אחת היא נשארת מועמדת; אוסף ריק אינו מפיק תוצאה.
+   */
   function drawCharacter() {
     const candidates = characters.length > 1
       ? characters.filter((item) => item.id !== randomCharacterId)
